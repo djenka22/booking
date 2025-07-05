@@ -7,8 +7,10 @@ import {
     IonCol,
     IonContent,
     IonGrid,
-    IonHeader, IonIcon,
+    IonHeader,
+    IonIcon,
     IonList,
+    IonMenuButton,
     IonRow,
     IonTitle,
     IonToolbar
@@ -25,7 +27,7 @@ import {RouterLink} from "@angular/router";
     templateUrl: './offers.page.html',
     styleUrls: ['./offers.page.scss'],
     standalone: true,
-    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonCol, IonGrid, IonList, IonRow, NonFeaturedPlaceComponent, IonButtons, IonButton, IonIcon, RouterLink]
+    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonCol, IonGrid, IonList, IonRow, NonFeaturedPlaceComponent, IonButtons, IonButton, IonIcon, RouterLink, IonMenuButton]
 })
 export class OffersPage implements OnInit {
 

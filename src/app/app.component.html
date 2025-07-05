@@ -1,3 +1,36 @@
 <ion-app>
-  <ion-router-outlet></ion-router-outlet>
+    <ion-menu side="start" menuId="main-menu" content-id="main-content">
+        <ion-header>
+            <ion-toolbar>
+                <ion-title>
+                    Booking
+                </ion-title>
+            </ion-toolbar>
+        </ion-header>
+
+        <ion-content>
+            <ion-list>
+                <ion-menu-toggle menu="main-menu"> <!-- toggles the menu (closes) when clicked on -->
+                    <ion-item lines="none" routerLink="/places/tabs/discover" routerDirection="root">
+                        <ion-icon name="business-outline" slot="start"></ion-icon>
+                        <ion-label>Discover Places</ion-label>
+                    </ion-item>
+                </ion-menu-toggle>
+                <ion-menu-toggle menu="main-menu">
+                    <ion-item lines="none" routerLink="/bookings">
+                        <ion-icon name="checkbox-outline" slot="start"></ion-icon>
+                        <ion-label>Your Bookings</ion-label>
+                    </ion-item>
+                </ion-menu-toggle>
+                <ion-menu-toggle menu="main-menu">
+                    <ion-item lines="none" (click)="onLogout()" button="">
+                        <ion-icon name="exit-outline" slot="start"></ion-icon>
+                        <ion-label>Logout</ion-label>
+                    </ion-item>
+                </ion-menu-toggle>
+            </ion-list>
+        </ion-content>
+    </ion-menu>
+
+    <ion-router-outlet id="main-content"></ion-router-outlet>
 </ion-app>
