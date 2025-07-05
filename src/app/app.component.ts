@@ -11,11 +11,13 @@ import {
   IonMenuToggle,
   IonRouterOutlet,
   IonTitle,
-  IonToolbar
+  IonToolbar,
+  NavController
 } from '@ionic/angular/standalone';
 import {addIcons} from "ionicons";
 import {businessOutline, checkboxOutline, exitOutline} from "ionicons/icons";
 import {RouterLink} from "@angular/router";
+import {AuthService} from "./auth/auth.service";
 
 @Component({
   selector: 'app-root',
@@ -23,13 +25,15 @@ import {RouterLink} from "@angular/router";
   imports: [IonApp, IonRouterOutlet, IonMenu, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonIcon, IonLabel, RouterLink, IonMenuToggle],
 })
 export class AppComponent {
-  constructor() {
+  constructor(private authService: AuthService,
+              private navController: NavController) {
     addIcons({businessOutline})
     addIcons({checkboxOutline})
     addIcons({exitOutline})
   }
 
   onLogout() {
-    console.log('Logout clicked');
+    this.authService.logout();
+    this.navController.navigateBack('/auth');
   }
 }
