@@ -1,10 +1,19 @@
 import {Component, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {IonBackButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar} from '@ionic/angular/standalone';
+import {
+  IonBackButton,
+  IonButtons,
+  IonContent,
+  IonHeader,
+  IonTitle,
+  IonToolbar,
+  NavController
+} from '@ionic/angular/standalone';
 import {Place} from "../../place.model";
 import {ActivatedRoute} from "@angular/router";
 import {PlacesService} from "../../places.service";
+import {ActivatedRouteService} from "../../shared/activated-route.service";
 
 @Component({
   selector: 'app-edit-offer',
@@ -17,18 +26,17 @@ export class EditOfferPage implements OnInit {
 
   _place!: Place;
 
-  constructor(private placesService: PlacesService,
-              private activatedRoute: ActivatedRoute) { }
+  constructor(private navController: NavController,
+              private activatedRoute: ActivatedRoute,
+              private activatedRouteService: ActivatedRouteService) { }
 
   ngOnInit() {
-    this.activatedRoute.paramMap.subscribe(params => {
-      if (params.has('offerId')) {
-        const placeId = params.get('offerId');
-        if (placeId) {
-          this._place = this.placesService.getPlace(placeId);
-        }
-      }
-    })
+    let place = this.activatedRouteService.findPlaceBasedOnRoute(this.activatedRoute,'offerId');
+    if (!place) {
+      this.navController.navigateBack('/places/tabs/offers');
+      return;
+    }
+    this._place = place;
   }
 
 }

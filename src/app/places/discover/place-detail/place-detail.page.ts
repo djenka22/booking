@@ -13,6 +13,7 @@ import {
 import {ActivatedRoute, Router} from "@angular/router";
 import {PlacesService} from "../../places.service";
 import {Place} from "../../place.model";
+import {ActivatedRouteService} from "../../shared/activated-route.service";
 
 @Component({
   selector: 'app-place-detail',
@@ -26,18 +27,17 @@ export class PlaceDetailPage implements OnInit {
   _place!: Place;
 
   constructor(private navController: NavController,
-              private placesService: PlacesService,
-              private activatedRoute: ActivatedRoute) { }
+              private activatedRouteService: ActivatedRouteService,
+              private activatedRoute: ActivatedRoute){
+  }
 
   ngOnInit() {
-    this.activatedRoute.paramMap.subscribe(params => {
-      if (params.has('placeId')) {
-        const placeId = params.get('placeId');
-        if (placeId) {
-          this._place = this.placesService.getPlace(placeId);
-        }
-      }
-    })
+    let place = this.activatedRouteService.findPlaceBasedOnRoute(this.activatedRoute,'placeId');
+    if (!place) {
+      this.navController.navigateBack('/places/tabs/offers');
+      return;
+    }
+    this._place = place;
   }
 
   onBookPlace() {
