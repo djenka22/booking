@@ -1,0 +1,16 @@
+<ion-card>
+    <ion-card-header>
+        <ion-card-title>{{ _place().title }}</ion-card-title>
+        <ion-card-subtitle>{{ _place().price | currency }} / Night</ion-card-subtitle>
+    </ion-card-header>
+    <ion-img [src]="_place().imageUrl"></ion-img>
+    <ion-card-content>{{ _place().description }}</ion-card-content>
+    <ion-button
+            color="primary"
+            fill="clear"
+            [routerLink]="_routerLinkPath()"
+            routerDirection="forward"
+    >
+        More
+    </ion-button>
+</ion-card>
