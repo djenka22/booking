@@ -1,0 +1,11 @@
+<ion-item [routerLink]="routerLinkPath()"
+          detail="true"
+> <!--Detail adds arrow at the end to indicate forward navigation-->
+    <ion-thumbnail slot="start">
+        <ion-img [src]="place().imageUrl"></ion-img>
+    </ion-thumbnail>
+    <ion-label>
+        <h2>{{ place().title }}</h2>
+        <p>{{ place().description }}</p>
+    </ion-label>
+</ion-item>

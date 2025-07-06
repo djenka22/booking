@@ -10,7 +10,6 @@ import {
     IonModal,
     IonTitle,
     IonToolbar,
-    ModalController,
     NavController
 } from '@ionic/angular/standalone';
 import {ActivatedRoute} from "@angular/router";
@@ -32,8 +31,7 @@ export class PlaceDetailPage implements OnInit {
 
     constructor(private navController: NavController,
                 private activatedRouteService: ActivatedRouteService,
-                private activatedRoute: ActivatedRoute,
-                private modalController: ModalController) {
+                private activatedRoute: ActivatedRoute) {
     }
 
     ngOnInit() {

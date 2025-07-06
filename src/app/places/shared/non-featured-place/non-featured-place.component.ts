@@ -1,24 +1,23 @@
-import { Component, input, OnInit } from '@angular/core';
+import {Component, input, OnInit} from '@angular/core';
 import {Place} from "../../place.model";
-import {RouterLink} from "@angular/router";
-import {IonImg, IonItem, IonLabel, IonThumbnail} from "@ionic/angular/standalone";
+import {IonItemOption, IonItemOptions, IonItemSliding,} from "@ionic/angular/standalone";
+import {CommonPlaceComponent} from "../common-place/common-place.component";
 
 @Component({
   selector: 'app-non-featured-place',
   templateUrl: './non-featured-place.component.html',
   styleUrls: ['./non-featured-place.component.scss'],
   imports: [
-    RouterLink,
-    IonImg,
-    IonThumbnail,
-    IonItem,
-    IonLabel
+    IonItemSliding,
+    IonItemOptions,
+    IonItemOption,
+    CommonPlaceComponent
   ]
 })
 export class NonFeaturedPlaceComponent  implements OnInit {
 
-  _place = input.required<Place>();
-  _routerLinkPath = input.required<string[]>();
+  place = input.required<Place>();
+  routerLinkPath = input.required<string[]>();
 
   constructor() { }
 
