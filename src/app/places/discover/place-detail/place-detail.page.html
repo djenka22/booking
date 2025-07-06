@@ -1,14 +1,19 @@
 <ion-header>
-  <ion-toolbar>
-      <ion-buttons slot="start">
-          <ion-back-button default-href="/places/tabs/discover"></ion-back-button>
-      </ion-buttons>
-    <ion-title>Place-Detail</ion-title>
-  </ion-toolbar>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button default-href="/places/tabs/discover"></ion-back-button>
+        </ion-buttons>
+        <ion-title>Place-Detail</ion-title>
+    </ion-toolbar>
 </ion-header>
 
 <ion-content>
-    <ion-button color="primary" class="ion-margin" (click)="onBookPlace()">
+    <ion-button color="primary" class="ion-margin" (click)="setModalOpen(true)">
         Book
     </ion-button>
+    <ion-modal [isOpen]="isBookModalOpen">
+        <ng-template>
+            <app-create-booking class="full-height-modal-content" [place]="_place" (isClosed)="onModalClosed($event)"></app-create-booking>
+        </ng-template>
+    </ion-modal>
 </ion-content>
