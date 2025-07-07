@@ -15,7 +15,7 @@ import {
     IonTitle,
     IonToolbar
 } from '@ionic/angular/standalone';
-import {NonFeaturedPlaceComponent} from "../shared/non-featured-place/non-featured-place.component";
+import {OfferItemComponent} from "./offer-item/offer-item.component";
 import {PlacesService} from "../places.service";
 import {Place} from "../place.model";
 import {addIcons} from "ionicons";
@@ -27,7 +27,7 @@ import {RouterLink} from "@angular/router";
     templateUrl: './offers.page.html',
     styleUrls: ['./offers.page.scss'],
     standalone: true,
-    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonCol, IonGrid, IonList, IonRow, NonFeaturedPlaceComponent, IonButtons, IonButton, IonIcon, RouterLink, IonMenuButton]
+    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonCol, IonGrid, IonList, IonRow, OfferItemComponent, IonButtons, IonButton, IonIcon, RouterLink, IonMenuButton]
 })
 export class OffersPage implements OnInit {
 
