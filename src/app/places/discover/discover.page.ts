@@ -10,6 +10,8 @@ import {
     IonList,
     IonMenuButton,
     IonRow,
+    IonSegment,
+    IonSegmentButton,
     IonTitle,
     IonToolbar
 } from '@ionic/angular/standalone';
@@ -19,13 +21,14 @@ import {FeaturedPlacesFilterPipe} from "../pipes/FeaturedPlacesFilterPipe";
 import {FeaturedPlaceComponent} from "../shared/featured-place/featured-place.component";
 import {CommonPlaceComponent} from "../shared/common-place/common-place.component";
 import {CdkFixedSizeVirtualScroll, CdkVirtualForOf, CdkVirtualScrollViewport} from "@angular/cdk/scrolling";
+import {SegmentChangeEventDetail} from "@ionic/angular";
 
 @Component({
   selector: 'app-discover',
   templateUrl: './discover.page.html',
   styleUrls: ['./discover.page.scss'],
   standalone: true,
-    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonGrid, IonRow, IonCol, IonList, FeaturedPlacesFilterPipe, IonButtons, FeaturedPlaceComponent, IonMenuButton, CommonPlaceComponent, CdkVirtualScrollViewport, CdkFixedSizeVirtualScroll, CdkVirtualForOf]
+    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonGrid, IonRow, IonCol, IonList, FeaturedPlacesFilterPipe, IonButtons, FeaturedPlaceComponent, IonMenuButton, CommonPlaceComponent, CdkVirtualScrollViewport, CdkFixedSizeVirtualScroll, CdkVirtualForOf, IonSegment, IonSegmentButton]
 })
 export class DiscoverPage implements OnInit {
 
@@ -36,4 +39,8 @@ export class DiscoverPage implements OnInit {
   ngOnInit() {
     this.loadedPlaces = this.placesService.places;
   }
+
+    onFilterUpdate($event: CustomEvent<SegmentChangeEventDetail>) {
+        console.log($event.detail.value);
+    }
 }
