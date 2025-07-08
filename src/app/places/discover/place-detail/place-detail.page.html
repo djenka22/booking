@@ -19,8 +19,10 @@
         </ion-action-sheet>
         <ion-modal [isOpen]="bookModalOpen" [presentingElement]="page" (didDismiss)="setModalOpen(false)">
             <ng-template>
-                <app-create-booking class="full-height-modal-content" [place]="place"
+                <app-create-booking class="full-height-modal-content"
+                                    [place]="place"
                                     (isModalClosed)="setModalOpen(false)"
+                                    [bookModalActionMode]="bookModalActionMode"
                 ></app-create-booking>
             </ng-template>
         </ion-modal>

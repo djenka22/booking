@@ -20,6 +20,7 @@ import {checkmarkOutline, closeOutline} from "ionicons/icons";
 })
 export class CreateBookingComponent implements OnInit {
 
+    bookModalActionMode = input.required<'select' | 'random'>();
     place = input.required<Place>();
     isModalClosed = output<string>()
 
@@ -31,6 +32,7 @@ export class CreateBookingComponent implements OnInit {
 
 
     ngOnInit() {
+        console.log(this.bookModalActionMode());
     }
 
     onCancel() {

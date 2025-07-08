@@ -30,16 +30,17 @@ export class PlaceDetailPage implements OnInit {
     place!: Place;
     _bookModalOpen: boolean = false
     _actionSheetOpen = false;
+    private _bookModalActionMode!: 'select' | 'random';
 
 
     public actionSheetButtons = [
         {
             text: 'Select Date',
-            handler: () => this.setModalOpen(true)
+            handler: () => this.openBookModal('select')
         },
         {
             text: 'Random Date',
-            handler: () => this.setModalOpen(true)
+            handler: () => this.openBookModal('random')
 
         },
         {
@@ -80,6 +81,16 @@ export class PlaceDetailPage implements OnInit {
 
     setActionSheetOpen(open: boolean) {
         this._actionSheetOpen = open;
+    }
+
+    get bookModalActionMode() {
+        return this._bookModalActionMode;
+    }
+
+    openBookModal(actionMode: 'select' | 'random') {
+        this._bookModalActionMode = actionMode;
+        this.setModalOpen(true);
+        this.setActionSheetOpen(false);
     }
 
 }
