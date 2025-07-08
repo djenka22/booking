@@ -1,19 +1,29 @@
-<ion-header>
-    <ion-toolbar>
-        <ion-buttons slot="start">
-            <ion-back-button default-href="/places/tabs/discover"></ion-back-button>
-        </ion-buttons>
-        <ion-title>Place-Detail</ion-title>
-    </ion-toolbar>
-</ion-header>
 
-<ion-content>
-    <ion-button color="primary" class="ion-margin" (click)="setModalOpen(true)">
-        Book
-    </ion-button>
-    <ion-modal [isOpen]="isBookModalOpen">
-        <ng-template>
-            <app-create-booking class="full-height-modal-content" [place]="_place" (isClosed)="onModalClosed($event)"></app-create-booking>
-        </ng-template>
-    </ion-modal>
-</ion-content>
+<div class="ion-page" #page>
+    <ion-header>
+        <ion-toolbar>
+            <ion-buttons slot="start">
+                <ion-back-button default-href="/places/tabs/discover"></ion-back-button>
+            </ion-buttons>
+            <ion-title>Place-Detail</ion-title>
+        </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+        <ion-button color="primary" class="ion-margin" (click)="setActionSheetOpen(true)">
+            Book
+        </ion-button>
+        <ion-action-sheet [isOpen]="actionSheetOpen" header="Choose an Action" [buttons]="actionSheetButtons"
+                          (didDismiss)="setActionSheetOpen(false)">
+
+        </ion-action-sheet>
+        <ion-modal [isOpen]="bookModalOpen" [presentingElement]="page" (didDismiss)="setModalOpen(false)">
+            <ng-template>
+                <app-create-booking class="full-height-modal-content" [place]="place"
+                                    (isModalClosed)="setModalOpen(false)"
+                ></app-create-booking>
+            </ng-template>
+        </ion-modal>
+    </ion-content>
+</div>
+

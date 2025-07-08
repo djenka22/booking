@@ -19,22 +19,22 @@ import {checkmarkOutline, closeOutline} from "ionicons/icons";
     ]
 })
 export class CreateBookingComponent implements OnInit {
+
     place = input.required<Place>();
-    isClosed = output<string>()
+    isModalClosed = output<string>()
+
 
     constructor() {
         addIcons({closeOutline})
         addIcons({checkmarkOutline})
     }
 
+
     ngOnInit() {
     }
 
     onCancel() {
-        this.isClosed.emit('cancel');
+        this.isModalClosed.emit('cancel');
     }
 
-    onBookPlace() {
-        this.isClosed.emit('confirm');
-    }
 }
