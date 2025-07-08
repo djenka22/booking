@@ -1,7 +1,20 @@
 import {Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
-import {IonButton, IonContent, IonHeader, IonLoading, IonTitle, IonToolbar} from '@ionic/angular/standalone';
+import {
+  IonButton,
+  IonCol,
+  IonContent,
+  IonGrid,
+  IonHeader,
+  IonInput,
+  IonItem,
+  IonList,
+  IonLoading,
+  IonRow,
+  IonTitle,
+  IonToolbar
+} from '@ionic/angular/standalone';
 import {AuthService} from "./auth.service";
 import {Router} from "@angular/router";
 
@@ -10,7 +23,7 @@ import {Router} from "@angular/router";
   templateUrl: './auth.page.html',
   styleUrls: ['./auth.page.scss'],
   standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonButton, IonLoading]
+  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonButton, IonLoading, IonGrid, IonRow, IonCol, IonList, IonItem, IonInput]
 })
 export class AuthPage implements OnInit {
 
