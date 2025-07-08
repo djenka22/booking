@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
-import {IonButton, IonContent, IonHeader, IonTitle, IonToolbar} from '@ionic/angular/standalone';
+import {IonButton, IonContent, IonHeader, IonLoading, IonTitle, IonToolbar} from '@ionic/angular/standalone';
 import {AuthService} from "./auth.service";
 import {Router} from "@angular/router";
 
@@ -10,9 +10,11 @@ import {Router} from "@angular/router";
   templateUrl: './auth.page.html',
   styleUrls: ['./auth.page.scss'],
   standalone: true,
-    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonButton]
+  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonButton, IonLoading]
 })
 export class AuthPage implements OnInit {
+
+  loading: boolean = false;
 
   constructor(private authService: AuthService,
               private router: Router) { }
@@ -21,7 +23,15 @@ export class AuthPage implements OnInit {
   }
 
   onLogin() {
+    this.loading = true;
     this.authService.login();
+    setTimeout( () => {
+          this.loading = false;
+        }
+        , 1000)
+  }
+
+  openHomePage() {
     this.router.navigate(['/', 'places', 'tabs', 'discover']);
   }
 }
