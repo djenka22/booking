@@ -36,7 +36,8 @@ export class PlaceDetailPage implements OnInit {
     public actionSheetButtons = [
         {
             text: 'Select Date',
-            handler: () => this.openBookModal('select')
+            handler: () => {
+                this.openBookModal('select')}
         },
         {
             text: 'Random Date',
@@ -60,6 +61,7 @@ export class PlaceDetailPage implements OnInit {
 
     ngOnInit() {
         let place = this.activatedRouteService.findPlaceBasedOnRoute(this.activatedRoute, 'placeId');
+        console.log(place);
         if (!place) {
             this.navController.navigateBack('/places/tabs/offers');
             return;
@@ -93,4 +95,8 @@ export class PlaceDetailPage implements OnInit {
         this.setActionSheetOpen(false);
     }
 
+    onModalClosed(event: any) {
+        this._bookModalOpen = false;
+        console.log(event);
+    }
 }

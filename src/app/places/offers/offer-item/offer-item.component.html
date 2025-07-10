@@ -1,5 +1,5 @@
 <ion-item-sliding #slidingItem>
-    <app-common-place [place]="place()" [routerLinkPath]="routerLinkPath()"></app-common-place>
+    <app-common-place [place]="place()" [routerLinkPath]="offerDetailPath()"></app-common-place>
     <ion-item-options>
         <ion-item-option color="secondary" (click)="onEdit(slidingItem)"> <!--if navigated with routerLink, when coming back, slider is not closed-->
             <ion-icon name="create-outline" slot="icon-only"></ion-icon>

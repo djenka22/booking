@@ -20,7 +20,8 @@ import {createOutline} from "ionicons/icons";
 export class OfferItemComponent implements OnInit {
 
   place = input.required<Place>();
-  routerLinkPath = input.required<string[]>();
+  offerDetailPath = input.required<string[]>();
+  editOfferPath = input.required<string[]>();
 
   constructor(private navController: NavController) {
     addIcons({createOutline})
@@ -30,7 +31,7 @@ export class OfferItemComponent implements OnInit {
 
   onEdit(slidingItem: IonItemSliding) {
     slidingItem.close();
-    this.navController.navigateForward(this.routerLinkPath());
+    this.navController.navigateForward(this.editOfferPath());
   }
 
 }

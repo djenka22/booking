@@ -6,4 +6,6 @@ export interface Place {
     imageUrl: string;
     price: number;
     featured: boolean
+    availableFrom: Date;
+    availableTo: Date;
 }

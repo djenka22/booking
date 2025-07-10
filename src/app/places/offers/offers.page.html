@@ -20,7 +20,8 @@
                     @for (offer of loadedOffers ; track offer.id) {
                         <app-offer-item
                                 [place]="offer"
-                                [routerLinkPath]="['/', 'places', 'tabs', 'offers', offer.id]"
+                                [offerDetailPath]="['/', 'places', 'tabs', 'offers', offer.id]"
+                                [editOfferPath]="['/', 'places', 'tabs', 'offers', 'edit', offer.id]"
                         ></app-offer-item>
                     }
                 </ion-list>

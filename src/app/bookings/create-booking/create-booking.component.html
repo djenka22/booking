@@ -10,6 +10,87 @@
         </ion-header>
 
         <ion-content class="ion-text-center">
-            <p> {{ place().description }} </p>
-            <ion-button color="primary">Book!</ion-button>
+            <form (ngSubmit)="onBookPlace()" #bookingForm="ngForm">
+                <ion-grid>
+                    <ion-row>
+                        <ion-col size-sm="6" offset-sm="3">
+                            <ion-item>
+                                <ion-input label="First Name" labelPlacement="floating" type="text" ngModel name="first-name"
+                                           required="true">
+                                </ion-input>
+                            </ion-item>
+                        </ion-col>
+                    </ion-row>
+                    <ion-row>
+                        <ion-col size-sm="6" offset-sm="3">
+                            <ion-item>
+                                <ion-input label="Last Name" labelPlacement="floating" type="text" ngModel name="last-name"
+                                           required="true">
+                                </ion-input>
+                            </ion-item>
+                        </ion-col>
+                    </ion-row>
+                    <ion-row>
+                        <ion-col size-sm="6" offset-sm="3">
+                            <ion-item>
+                                <ion-select label="Number of Guests" labelPlacement="floating" type="text" [ngModel]="'2'" name="guest-number">
+                                    <ion-select-option value="1">1</ion-select-option>
+                                    <ion-select-option value="2">2</ion-select-option>
+                                    <ion-select-option value="3">3</ion-select-option>
+                                </ion-select>
+                            </ion-item>
+                        </ion-col>
+                    </ion-row>
+                    <ion-row>
+                        <ion-col size-sm="3" offset-sm="3">
+                            <ion-item mode="ios">
+                                <ion-label style="font-size: 16px" position="stacked">Available from</ion-label>
+                                <ion-datetime-button style="padding-bottom: 2px; padding-top: 14px"
+                                                     datetime="availableFrom"></ion-datetime-button>
+                                <ion-popover [keepContentsMounted]="true">
+                                    <ng-template>
+                                        <ion-datetime
+                                                id="availableFrom"
+                                                presentation="date"
+                                                [min]="place().availableFrom.toISOString()"
+                                                [max]="place().availableTo.toISOString()"
+                                                [(ngModel)]="dateFrom"
+                                                (ngModelChange)="onDateFromChange()"
+                                                name="date-from"
+                                                required="true"
+                                        ></ion-datetime>
+                                    </ng-template>
+                                </ion-popover>
+                            </ion-item>
+                        </ion-col>
+                    </ion-row>
+                    <ion-row>
+                        <ion-col size-sm="3">
+                            <ion-item mode="ios">
+                                <ion-label style="font-size: 16px" position="stacked">Available to</ion-label>
+                                <ion-datetime-button style="padding-bottom: 2px; padding-top: 14px"
+                                                     datetime="availableTo"></ion-datetime-button>
+                                <ion-popover [keepContentsMounted]="true">
+                                    <ng-template>
+                                        <ion-datetime
+                                                id="availableTo"
+                                                presentation="date"
+                                                [min]="dateFrom"
+                                                [max]="place().availableTo.toISOString()"
+                                                [(ngModel)]="dateTo"
+                                                required="true"
+                                                name="date-to"
+                                        ></ion-datetime>
+                                    </ng-template>
+                                </ion-popover>
+                            </ion-item>
+                        </ion-col>
+                    </ion-row>
+                    <ion-row>
+                        <ion-col>
+                            <ion-button color="primary" type="submit" expand="block" [disabled]="bookingForm.invalid">Book!</ion-button>
+                        </ion-col>
+                    </ion-row>
+                </ion-grid>
+            </form>
         </ion-content>

@@ -73,8 +73,6 @@ export class AuthPage implements OnInit {
         this.isLogin = !this.isLogin;
     }
 
-    protected readonly onsubmit = onsubmit;
-
     onSubmit(authForm: FormGroup) {
         if (authForm.invalid) {
             return;
