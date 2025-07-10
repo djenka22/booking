@@ -1,12 +1,17 @@
 <ion-header>
-  <ion-toolbar>
-      <ion-buttons slot="start">
-          <ion-back-button default-href="/places/tabs/offers"></ion-back-button>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button default-href="/places/tabs/offers"></ion-back-button>
         </ion-buttons>
-    <ion-title>Edit {{ _place.title }}</ion-title>
-  </ion-toolbar>
+        <ion-title>Edit {{ place.title }}</ion-title>
+        <ion-buttons slot="primary">
+            <ion-button (click)="onSaveOffer()" [disabled]="offerForm?.invalid">
+                <ion-icon name="checkmark-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
 </ion-header>
 
 <ion-content>
-    {{ _place.title }}
+    <app-offer-form [offer]="place" (formReady)="onFormReady($event)"></app-offer-form>
 </ion-content>
