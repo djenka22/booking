@@ -35,6 +35,9 @@ export class AuthPage implements OnInit {
     constructor(private authService: AuthService,
                 private router: Router,
                 private formBuilder: FormBuilder) {
+    }
+
+    ngOnInit() {
         this.authForm = this.formBuilder.group({
             email: ['', {
                 validators: [Validators.required, Validators.email]
@@ -43,9 +46,6 @@ export class AuthPage implements OnInit {
                 validators: [Validators.required, Validators.minLength(6)]
             }]
         });
-    }
-
-    ngOnInit() {
     }
 
     get email() {
