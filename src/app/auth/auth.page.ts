@@ -30,13 +30,18 @@ export class AuthPage implements OnInit {
 
     loading: boolean = false;
     authForm!: FormGroup;
+    isLogin: boolean = true;
 
     constructor(private authService: AuthService,
                 private router: Router,
                 private formBuilder: FormBuilder) {
         this.authForm = this.formBuilder.group({
-            email: ['', [Validators.required, Validators.email]],
-            password: ['', [Validators.required, Validators.minLength(6)]]
+            email: ['', {
+                validators: [Validators.required, Validators.email]
+            }],
+            password: ['', {
+                validators: [Validators.required, Validators.minLength(6)]
+            }]
         });
     }
 
@@ -44,11 +49,11 @@ export class AuthPage implements OnInit {
     }
 
     get email() {
-      return this.authForm.get('email');
+        return this.authForm.get('email');
     }
 
     get password() {
-      return this.authForm.get('password');
+        return this.authForm.get('password');
     }
 
     onLogin() {
@@ -62,5 +67,25 @@ export class AuthPage implements OnInit {
 
     openHomePage() {
         this.router.navigate(['/', 'places', 'tabs', 'discover']);
+    }
+
+    switchAuthMode() {
+        this.isLogin = !this.isLogin;
+    }
+
+    protected readonly onsubmit = onsubmit;
+
+    onSubmit(authForm: FormGroup) {
+        if (authForm.invalid) {
+            return;
+        }
+        const email = authForm.value.email;
+        const password = authForm.value.password;
+
+        if (this.isLogin) {
+            // send a login request
+        } else {
+            // send a signup request
+        }
     }
 }

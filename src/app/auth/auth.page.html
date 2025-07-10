@@ -1,25 +1,21 @@
 <ion-header>
     <ion-toolbar>
-        <ion-title>Authentication</ion-title>
+        <ion-title> {{ isLogin ? 'Login' : 'Signup' }}</ion-title>
     </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-    <form [formGroup]="authForm" (ngSubmit)="onLogin()">
+    <form [formGroup]="authForm" (ngSubmit)="onSubmit(authForm)">
         <ion-grid>
             <ion-row>
                 <ion-col size-md="6" offset-md="3">
                     <ion-list>
                         <ion-item>
                             <ion-input label="Email"
-                                       class="ion-touched ion-invalid"
                                        labelPlacement="floating"
                                        placeholder="Enter email"
                                        type="email"
                                        formControlName="email"
-                                       [class.ion-invalid]="email?.invalid && email?.touched"
-                                       [class.ion-valid]="email?.valid && email?.touched"
-                                       style="width: 100%"
                             ></ion-input>
                         </ion-item>
                         @if (email?.invalid && email?.touched) {
@@ -37,8 +33,6 @@
                                        placeholder="Enter password"
                                        type="password"
                                        formControlName="password"
-                                       [class.ion-invalid]="password?.invalid && (password?.dirty || password?.touched)"
-                                       [class.ion-valid]="password?.valid && (password?.dirty || password?.touched)"
                             ></ion-input>
                         </ion-item>
                         @if (password?.invalid && (password?.touched || password?.dirty)) {
@@ -55,12 +49,12 @@
             </ion-row>
             <ion-row>
                 <ion-col size-md="6" offset-md="3">
-                    <ion-button color="secondary" fill="clear" expand="block">
-                        Switch to Signup
+                    <ion-button type="button" color="secondary" fill="clear" expand="block" (click)="switchAuthMode()">
+                         Switch to {{ isLogin ? 'Signup' : 'Login' }}
                     </ion-button>
                     <ion-loading (willDismiss)="openHomePage()" message="Logging in" spinner="circles"
                                  [isOpen]="loading"></ion-loading>
-                    <ion-button fill="solid" expand="block" id="login" color="primary" (click)="onLogin()">
+                    <ion-button type="submit" fill="solid" expand="block" id="login" color="primary" [disabled]="authForm.invalid" (click)="onLogin()">
                         Login
                     </ion-button>
                 </ion-col>
