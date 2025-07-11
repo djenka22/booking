@@ -6,9 +6,14 @@ import {
     IonBackButton,
     IonButton,
     IonButtons,
+    IonCol,
     IonContent,
+    IonGrid,
     IonHeader,
+    IonImg,
+    IonLoading,
     IonModal,
+    IonRow,
     IonTitle,
     IonToolbar,
     NavController
@@ -17,13 +22,16 @@ import {ActivatedRoute} from "@angular/router";
 import {Place} from "../../place.model";
 import {ActivatedRouteService} from "../../shared/activated-route.service";
 import {CreateBookingComponent} from "../../../bookings/create-booking/create-booking.component";
+import {BookingService} from "../../../bookings/booking.service";
+import {CreateBookingDto} from "../../../bookings/booking.model";
+import {AuthService} from "../../../auth/auth.service";
 
 @Component({
     selector: 'app-place-detail',
     templateUrl: './place-detail.page.html',
     styleUrls: ['./place-detail.page.scss'],
     standalone: true,
-    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonButtons, IonBackButton, IonButton, IonModal, CreateBookingComponent, IonActionSheet]
+    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonButtons, IonBackButton, IonButton, IonModal, CreateBookingComponent, IonActionSheet, IonImg, IonGrid, IonRow, IonCol, IonLoading]
 })
 export class PlaceDetailPage implements OnInit {
 
@@ -31,13 +39,16 @@ export class PlaceDetailPage implements OnInit {
     _bookModalOpen: boolean = false
     _actionSheetOpen = false;
     private _bookModalActionMode!: 'select' | 'random';
+    private _loading: boolean = false;
+    isBookable: boolean = false;
 
 
     public actionSheetButtons = [
         {
             text: 'Select Date',
             handler: () => {
-                this.openBookModal('select')}
+                this.openBookModal('select')
+            }
         },
         {
             text: 'Random Date',
@@ -56,7 +67,9 @@ export class PlaceDetailPage implements OnInit {
 
     constructor(private navController: NavController,
                 private activatedRouteService: ActivatedRouteService,
-                private activatedRoute: ActivatedRoute) {
+                private activatedRoute: ActivatedRoute,
+                private bookingService: BookingService,
+                private authService: AuthService) {
     }
 
     ngOnInit() {
@@ -67,6 +80,11 @@ export class PlaceDetailPage implements OnInit {
             return;
         }
         this.place = place;
+        this.isBookable = place.userId !== this.authService.userId;
+    }
+
+    get loading() {
+        return this._loading;
     }
 
     get bookModalOpen() {
@@ -95,8 +113,32 @@ export class PlaceDetailPage implements OnInit {
         this.setActionSheetOpen(false);
     }
 
-    onModalClosed(event: any) {
-        this._bookModalOpen = false;
-        console.log(event);
+    onModalClosed(event: CreateBookingDto) {
+        if (event.role === 'confirm' && event.bookingData) {
+            this._loading = true;
+            this.bookingService.addBooking(
+                this.place.id,
+                this.place.title,
+                this.place.imageUrl,
+                event.bookingData.firstName,
+                event.bookingData.lastName,
+                event.bookingData.guestNumber,
+                event.bookingData.startDate,
+                event.bookingData.endDate
+            ).subscribe(() => {
+                this._loading = false;
+                this.closeModal();
+            });
+        }
+    }
+
+    onPlaceBooked() {
+        setTimeout(() => {
+            this.navController.navigateBack('/bookings');
+        }, 200)
+    }
+
+    closeModal() {
+        this.setModalOpen(false);
     }
 }

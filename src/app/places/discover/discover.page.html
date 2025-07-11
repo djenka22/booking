@@ -8,7 +8,7 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-    <ion-segment value="bookable" (ionChange)="onFilterUpdate($event)">
+    <ion-segment #ionSegment value="bookable" (ionChange)="onFilterUpdate($event)">
         <ion-segment-button value="all">
             All places
         </ion-segment-button>

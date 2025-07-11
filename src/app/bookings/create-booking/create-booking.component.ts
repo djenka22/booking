@@ -23,6 +23,7 @@ import {Place} from "../../places/place.model";
 import {addIcons} from "ionicons";
 import {checkmarkOutline, closeOutline} from "ionicons/icons";
 import {FormsModule, NgForm, ReactiveFormsModule} from "@angular/forms";
+import {CreateBookingDto} from "../booking.model";
 
 @Component({
     selector: 'app-create-booking',
@@ -56,7 +57,7 @@ export class CreateBookingComponent implements OnInit {
     @ViewChild('bookingForm') form!: NgForm;
     bookModalActionMode = input.required<'select' | 'random'>();
     place = input.required<Place>();
-    isModalClosed = output<any>();
+    isModalClosed = output<CreateBookingDto>();
     dateFrom!: string;
     dateTo!: string ;
 
@@ -91,7 +92,7 @@ export class CreateBookingComponent implements OnInit {
 
     onCancel() {
         this.isModalClosed.emit({
-            booingData: null, role: 'cancel'}
+            role: 'cancel'}
         );
     }
 
