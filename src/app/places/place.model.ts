@@ -8,4 +8,5 @@ export interface Place {
     featured: boolean
     availableFrom: Date;
     availableTo: Date;
+    userId: string
 }

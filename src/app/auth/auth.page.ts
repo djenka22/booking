@@ -66,6 +66,7 @@ export class AuthPage implements OnInit {
     }
 
     openHomePage() {
+        this.authForm.reset();
         this.router.navigate(['/', 'places', 'tabs', 'discover']);
     }
 

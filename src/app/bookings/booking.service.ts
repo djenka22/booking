@@ -17,7 +17,8 @@ export class BookingService {
                 price: 149.99,
                 featured: true,
                 availableFrom: new Date('2025-07-01'),
-                availableTo: new Date('2025-10-31')
+                availableTo: new Date('2025-10-31'),
+                userId: '1'
             },
             userId: '1',
             guestNumber: 0

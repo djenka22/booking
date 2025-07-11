@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {
@@ -22,23 +22,36 @@ import {FeaturedPlaceComponent} from "../shared/featured-place/featured-place.co
 import {CommonPlaceComponent} from "../shared/common-place/common-place.component";
 import {CdkFixedSizeVirtualScroll, CdkVirtualForOf, CdkVirtualScrollViewport} from "@angular/cdk/scrolling";
 import {SegmentChangeEventDetail} from "@ionic/angular";
+import {Subscription} from "rxjs";
 
 @Component({
-  selector: 'app-discover',
-  templateUrl: './discover.page.html',
-  styleUrls: ['./discover.page.scss'],
-  standalone: true,
+    selector: 'app-discover',
+    templateUrl: './discover.page.html',
+    styleUrls: ['./discover.page.scss'],
+    standalone: true,
     imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonGrid, IonRow, IonCol, IonList, FeaturedPlacesFilterPipe, IonButtons, FeaturedPlaceComponent, IonMenuButton, CommonPlaceComponent, CdkVirtualScrollViewport, CdkFixedSizeVirtualScroll, CdkVirtualForOf, IonSegment, IonSegmentButton]
 })
-export class DiscoverPage implements OnInit {
+export class DiscoverPage implements OnInit, OnDestroy {
 
-  loadedPlaces!: Place[];
+    loadedPlaces!: Place[];
+    placesSubscription!: Subscription;
 
-  constructor(private placesService: PlacesService) { }
+    constructor(private placesService: PlacesService) {
+    }
 
-  ngOnInit() {
-    this.loadedPlaces = this.placesService.places;
-  }
+    ngOnDestroy(): void {
+        if (this.placesSubscription) {
+            this.placesSubscription.unsubscribe();
+        }
+    }
+
+    ngOnInit() {
+        this.placesSubscription = this.placesService.places.subscribe(
+            places => {
+                this.loadedPlaces = places;
+            }
+        );
+    }
 
     onFilterUpdate($event: CustomEvent<SegmentChangeEventDetail>) {
         console.log($event.detail.value);
