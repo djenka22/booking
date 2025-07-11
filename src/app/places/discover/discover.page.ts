@@ -23,6 +23,7 @@ import {CommonPlaceComponent} from "../shared/common-place/common-place.componen
 import {CdkFixedSizeVirtualScroll, CdkVirtualForOf, CdkVirtualScrollViewport} from "@angular/cdk/scrolling";
 import {SegmentChangeEventDetail} from "@ionic/angular";
 import {Subscription} from "rxjs";
+import {AuthService} from "../../auth/auth.service";
 
 @Component({
     selector: 'app-discover',
@@ -34,9 +35,11 @@ import {Subscription} from "rxjs";
 export class DiscoverPage implements OnInit, OnDestroy {
 
     loadedPlaces!: Place[];
-    placesSubscription!: Subscription;
+    placesSubscription!: Subscription
+    presentedPlaces!: Place[];
 
-    constructor(private placesService: PlacesService) {
+    constructor(private placesService: PlacesService,
+                private authService: AuthService) {
     }
 
     ngOnDestroy(): void {
@@ -49,11 +52,18 @@ export class DiscoverPage implements OnInit, OnDestroy {
         this.placesSubscription = this.placesService.places.subscribe(
             places => {
                 this.loadedPlaces = places;
+                this.presentedPlaces = this.loadedPlaces;
             }
         );
     }
 
     onFilterUpdate($event: CustomEvent<SegmentChangeEventDetail>) {
-        console.log($event.detail.value);
+        if ($event.detail.value === 'all') {
+            this.presentedPlaces = this.loadedPlaces;
+        } else {
+            this.presentedPlaces = this.loadedPlaces.filter(place => {
+                return place.userId !== this.authService.userId;
+            });
+        }
     }
 }

@@ -18,7 +18,7 @@ export class PlacesService {
             featured: true,
             availableFrom: new Date('2025-07-01'),
             availableTo: new Date('2025-10-31'),
-            userId: '1'
+            userId: '2'
         },
         {
             id: 'p2',
@@ -29,7 +29,7 @@ export class PlacesService {
             featured: false,
             availableFrom: new Date('2025-08-01'),
             availableTo: new Date('2025-09-30'),
-            userId: '2'
+            userId: '1'
         },
         {
             id: 'p3',
