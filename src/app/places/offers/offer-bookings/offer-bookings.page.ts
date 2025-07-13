@@ -32,11 +32,13 @@ export class OfferBookingsPage implements OnInit {
     }
 
     ngOnInit() {
-        let place = this.activatedRouteService.findPlaceBasedOnRoute(this.activatedRoute,'placeId');
-        if (!place) {
+        try {
+            this.activatedRouteService.findPlaceBasedOnRoute(this.activatedRoute,'placeId').subscribe(
+                p => this._place = p
+            );
+        } catch (e) {
             this.navController.navigateBack('/places/tabs/offers');
             return;
         }
-        this._place = place;
     }
 }

@@ -9,42 +9,45 @@
         </ion-toolbar>
     </ion-header>
 
-    <ion-content>
-        <ion-grid class="ion-no-padding">
-            <ion-row>
-                <ion-col size-sm="6" offset-sm="3" class="ion-no-padding">
-                    <ion-img [src]="place.imageUrl"></ion-img>
-                </ion-col>
-            </ion-row>
-            <ion-row>
-                <ion-col size-sm="6" offset-sm="3" class="ion-text-center">
-                    <p>{{ place.description }}</p>
-                </ion-col>
-            </ion-row>
-            @if (isBookable) {
+    @if(place) {
+        <ion-content>
+            <ion-grid class="ion-no-padding">
                 <ion-row>
-                    <ion-col size-sm="6" offset-sm="3" class="ion-text-center">
-                        <ion-button color="primary" class="ion-margin" (click)="setActionSheetOpen(true)">
-                            Book
-                        </ion-button>
+                    <ion-col size-sm="6" offset-sm="3" class="ion-no-padding">
+                        <ion-img [src]="place.imageUrl"></ion-img>
                     </ion-col>
                 </ion-row>
-            }
-        </ion-grid>
-        <ion-action-sheet [isOpen]="actionSheetOpen" header="Choose an Action" [buttons]="actionSheetButtons"
-                          (didDismiss)="setActionSheetOpen(false)">
-        </ion-action-sheet>
-        <ion-modal [isOpen]="bookModalOpen" [presentingElement]="page" (didDismiss)="closeModal()">
-            <ng-template>
-                <app-create-booking class="full-height-modal-content"
-                                    [place]="place"
-                                    (isModalClosed)="onModalClosed($event)"
-                                    [bookModalActionMode]="bookModalActionMode"
-                ></app-create-booking>
-            </ng-template>
-        </ion-modal>
-        <ion-loading (willDismiss)="onPlaceBooked()" message="Booking place" spinner="circles"
-                     [isOpen]="loading"></ion-loading>
-    </ion-content>
+                <ion-row>
+                    <ion-col size-sm="6" offset-sm="3" class="ion-text-center">
+                        <p>{{ place.description }}</p>
+                    </ion-col>
+                </ion-row>
+                @if (isBookable) {
+                    <ion-row>
+                        <ion-col size-sm="6" offset-sm="3" class="ion-text-center">
+                            <ion-button color="primary" class="ion-margin" (click)="setActionSheetOpen(true)">
+                                Book
+                            </ion-button>
+                        </ion-col>
+                    </ion-row>
+                }
+            </ion-grid>
+            <ion-action-sheet [isOpen]="actionSheetOpen" header="Choose an Action" [buttons]="actionSheetButtons"
+                              (didDismiss)="setActionSheetOpen(false)">
+            </ion-action-sheet>
+            <ion-modal [isOpen]="bookModalOpen" [presentingElement]="page" (didDismiss)="closeModal()">
+                <ng-template>
+                    <app-create-booking class="full-height-modal-content"
+                                        [place]="place"
+                                        (isModalClosed)="onModalClosed($event)"
+                                        [bookModalActionMode]="bookModalActionMode"
+                    ></app-create-booking>
+                </ng-template>
+            </ion-modal>
+            <ion-loading (willDismiss)="onPlaceBooked()" message="Booking place" spinner="circles"
+                         [isOpen]="loading"></ion-loading>
+        </ion-content>
+    }
+
 </div>
 

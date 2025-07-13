@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {
@@ -32,12 +32,14 @@ import {AuthService} from "../../auth/auth.service";
     standalone: true,
     imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonGrid, IonRow, IonCol, IonList, FeaturedPlacesFilterPipe, IonButtons, FeaturedPlaceComponent, IonMenuButton, CommonPlaceComponent, CdkVirtualScrollViewport, CdkFixedSizeVirtualScroll, CdkVirtualForOf, IonSegment, IonSegmentButton]
 })
-export class DiscoverPage implements OnInit, OnDestroy, AfterViewInit {
+export class DiscoverPage implements OnInit, OnDestroy {
 
     @ViewChild('ionSegment') ionSegment!: IonSegment;
     loadedPlaces!: Place[];
     placesSubscription!: Subscription
     presentedPlaces!: Place[];
+    loading: boolean = false;
+    activeFilter = 'bookable';
 
     constructor(private placesService: PlacesService,
                 private authService: AuthService) {
@@ -50,29 +52,23 @@ export class DiscoverPage implements OnInit, OnDestroy, AfterViewInit {
     }
 
     ngOnInit() {
+        console.log('DiscoverPage ngOnInit');
         this.placesSubscription = this.placesService.places.subscribe(
             places => {
                 this.loadedPlaces = places;
+                this.setFilteredPlaces(this.activeFilter);
+                console.log('DiscoverPage ngOnInit - places loaded', this.loadedPlaces);
             }
         );
     }
 
-    ngAfterViewInit() {
-        this.setFilteredPlaces(this.ionSegment.value);
-    }
-
     onFilterUpdate($event: CustomEvent<SegmentChangeEventDetail>) {
-        if ($event.detail.value === 'all') {
-            this.presentedPlaces = this.loadedPlaces;
-        } else {
-            this.presentedPlaces = this.loadedPlaces.filter(place => {
-                return place.userId !== this.authService.userId;
-            });
-        }
+        this.setFilteredPlaces($event.detail.value);
     }
 
     setFilteredPlaces(filterValue: SegmentValue | undefined) {
-        if (filterValue && filterValue === 'all') {
+        this.activeFilter = filterValue as string;
+        if (this.activeFilter === 'all') {
             this.presentedPlaces = this.loadedPlaces;
         } else {
             this.presentedPlaces = this.loadedPlaces.filter(place => {

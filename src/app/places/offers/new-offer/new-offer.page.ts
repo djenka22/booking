@@ -46,23 +46,21 @@ export class NewOfferPage implements OnInit, OnDestroy {
     ngOnInit() {
     }
 
-    onCreateOffer() {
+    async onCreateOffer() {
         if (this._offerForm?.invalid) {
             return;
         }
         this.loading = true;
-        const subscription = this.placeService.addPlace(
+        await this.placeService.addPlace(
             this._offerForm?.value['title'],
             this._offerForm?.value['description'],
             this._offerForm?.value['price'],
             new Date(this._offerForm?.value['availableFrom']),
             new Date(this._offerForm?.value['availableTo'])
-        ).subscribe(
-            () => {
-                this._offerForm?.reset();
-                this.loading = false;
-            }
-        );
+        )
+        this._offerForm?.reset();
+        this.loading = false;
+
     }
 
     onOfferCreated() {

@@ -44,6 +44,7 @@ export class OfferFormComponent implements OnInit {
     }
 
     ngOnInit() {
+        console.log('OfferFormComponent initialized with offer:', this.offer());
         this.offerForm = this.formBuilder.group({
             title: [this.offer()?.title, {
                 updateOn: 'change',

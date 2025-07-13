@@ -43,12 +43,16 @@ export class EditOfferPage implements OnInit {
     }
 
     ngOnInit() {
-        let place = this.activatedRouteService.findPlaceBasedOnRoute(this.activatedRoute, 'offerId');
-        if (!place) {
+        try {
+            this.activatedRouteService.findPlaceBasedOnRoute(this.activatedRoute, 'offerId').subscribe(
+                p => {
+                    this._place = p;
+                }
+            )
+        } catch (e) {
             this.navController.navigateBack('/places/tabs/offers');
             return;
         }
-        this._place = place;
     }
 
     get place() {

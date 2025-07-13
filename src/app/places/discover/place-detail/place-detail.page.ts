@@ -42,7 +42,6 @@ export class PlaceDetailPage implements OnInit {
     private _loading: boolean = false;
     isBookable: boolean = false;
 
-
     public actionSheetButtons = [
         {
             text: 'Select Date',
@@ -72,21 +71,29 @@ export class PlaceDetailPage implements OnInit {
                 private authService: AuthService) {
     }
 
+
     ngOnInit() {
-        let place = this.activatedRouteService.findPlaceBasedOnRoute(this.activatedRoute, 'placeId');
-        if (!place) {
-            this.navController.navigateBack('/places/tabs/offers');
-            return;
+        try {
+            this.activatedRouteService.findPlaceBasedOnRoute(this.activatedRoute, 'placeId').subscribe(
+                place => {
+                    this.place = place;
+                    this.isBookable = place.userId !== this.authService.userId;
+                }
+            );
+        } catch (error) {
+            console.error('Error fetching place details:', error);
+            setTimeout(() => {
+                this.navController.navigateBack('/places/tabs/discover');
+                return;
+            }, 400);
         }
-        this.place = place;
-        this.isBookable = place.userId !== this.authService.userId;
     }
 
     get loading() {
         return this._loading;
     }
 
-    get bookModalOpen() {
+    public get bookModalOpen() {
         return this._bookModalOpen;
     }
 
@@ -113,6 +120,7 @@ export class PlaceDetailPage implements OnInit {
     }
 
     onModalClosed(event: CreateBookingDto) {
+        console.log(event);
         if (event.role === 'confirm' && event.bookingData) {
             this._loading = true;
             this.bookingService.addBooking(
@@ -128,6 +136,8 @@ export class PlaceDetailPage implements OnInit {
                 this._loading = false;
                 this.closeModal();
             });
+        } else {
+            this.closeModal();
         }
     }
 
@@ -140,4 +150,5 @@ export class PlaceDetailPage implements OnInit {
     closeModal() {
         this.setModalOpen(false);
     }
+
 }

@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, ParamMap} from "@angular/router";
 import {PlacesService} from "../places.service";
-import {Subscription} from "rxjs";
+import {Observable, switchMap, take, tap, throwError} from "rxjs";
 import {Place} from "../model/place.model";
 
 @Injectable({
@@ -9,33 +9,31 @@ import {Place} from "../model/place.model";
 })
 export class ActivatedRouteService {
 
-    private placeSubscription?: Subscription;
-
     constructor(private placesService: PlacesService) {
     }
 
-    findPlaceBasedOnRoute(activatedRoute: ActivatedRoute, pathId: string): Place | undefined {
-        let place: Place | undefined;
-        // Subscription is always live, it will update if the params change even if ngOnInit is already executed
-        activatedRoute.paramMap.subscribe(paramMap => {
-            if (paramMap.has(pathId)) {
-                const placeId = paramMap.get(pathId);
-                if (placeId) {
-                    this.placeSubscription = this.placesService.getPlace(placeId).subscribe(
-                        p => place = p
-                    );
-                    this.removePlaceSubscription();
+    findPlaceBasedOnRoute(activatedRoute: ActivatedRoute, pathId: string): Observable<Place> {
+        return activatedRoute.paramMap.pipe(
+            switchMap((paramMap: ParamMap) => {
+                if (!paramMap.has(pathId)) {
+                    return throwError(() => new Error(`No path parameter found for: ${pathId}`));
                 }
-            }
-        })
 
-        return place;
+                const placeId = paramMap.get(pathId);
+
+                if (!placeId) {
+                    return throwError(() => new Error(`Place ID is missing or empty for pathId: ${pathId}`));
+                }
+
+                return this.placesService.getPlaceById(placeId).pipe(
+                    tap( {
+                        next: (place: Place) => {
+                            return place;
+                        }
+                    })
+                );
+            }),
+            take(1)
+        );
     }
-
-    removePlaceSubscription() {
-        if (this.placeSubscription) {
-            this.placeSubscription.unsubscribe();
-        }
-    }
-
 }

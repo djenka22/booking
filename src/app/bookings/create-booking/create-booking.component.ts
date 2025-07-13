@@ -68,8 +68,9 @@ export class CreateBookingComponent implements OnInit {
 
 
     ngOnInit() {
-        const availableFrom = new Date(this.place().availableFrom);
-        const availableTo = new Date(this.place().availableTo);
+        console.log('CreateBookingComponent initialized with place:', this.place());
+        const availableFrom = this.place().availableFrom.toDate();
+        const availableTo = this.place().availableTo.toDate();
 
         if (this.bookModalActionMode() === 'random') {
             this.dateFrom = new Date(
@@ -85,12 +86,13 @@ export class CreateBookingComponent implements OnInit {
             ).toISOString();
 
         } else {
-            this.dateFrom = this.place().availableFrom.toISOString();
+            this.dateFrom = this.place().availableFrom.toDate().toISOString();
             this.dateTo = this.dateFrom;
         }
     }
 
     onCancel() {
+        console.log('Cancel');
         this.isModalClosed.emit({
             role: 'cancel'}
         );

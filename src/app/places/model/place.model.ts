@@ -1,3 +1,5 @@
+import {Timestamp} from 'firebase/firestore'
+
 export interface Place {
 
     id: string;
@@ -6,7 +8,7 @@ export interface Place {
     imageUrl: string;
     price: number;
     featured: boolean
-    availableFrom: Date;
-    availableTo: Date;
+    availableFrom: Timestamp;
+    availableTo: Timestamp;
     userId: string
 }
