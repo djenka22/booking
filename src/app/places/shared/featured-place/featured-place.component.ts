@@ -1,5 +1,5 @@
 import {Component, input, OnInit} from '@angular/core';
-import {Place} from "../../place.model";
+import {Place} from "../../model/place.model";
 import {CurrencyPipe} from "@angular/common";
 import {
   IonButton,
@@ -7,7 +7,8 @@ import {
   IonCardContent,
   IonCardHeader,
   IonCardSubtitle,
-  IonCardTitle, IonImg
+  IonCardTitle,
+  IonImg
 } from "@ionic/angular/standalone";
 import {RouterLink} from "@angular/router";
 

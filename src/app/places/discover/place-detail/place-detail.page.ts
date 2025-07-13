@@ -19,7 +19,7 @@ import {
     NavController
 } from '@ionic/angular/standalone';
 import {ActivatedRoute} from "@angular/router";
-import {Place} from "../../place.model";
+import {Place} from "../../model/place.model";
 import {ActivatedRouteService} from "../../shared/activated-route.service";
 import {CreateBookingComponent} from "../../../bookings/create-booking/create-booking.component";
 import {BookingService} from "../../../bookings/booking.service";
@@ -74,7 +74,6 @@ export class PlaceDetailPage implements OnInit {
 
     ngOnInit() {
         let place = this.activatedRouteService.findPlaceBasedOnRoute(this.activatedRoute, 'placeId');
-        console.log(place);
         if (!place) {
             this.navController.navigateBack('/places/tabs/offers');
             return;

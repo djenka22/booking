@@ -1,7 +1,7 @@
 import {Component, input, OnInit} from '@angular/core';
 import {IonImg, IonItem, IonLabel, IonThumbnail} from "@ionic/angular/standalone";
 import {RouterLink} from "@angular/router";
-import {Place} from "../../place.model";
+import {Place} from "../../model/place.model";
 
 @Component({
     selector: 'app-common-place',

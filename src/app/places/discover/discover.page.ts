@@ -16,7 +16,7 @@ import {
     IonToolbar
 } from '@ionic/angular/standalone';
 import {PlacesService} from "../places.service";
-import {Place} from "../place.model";
+import {Place} from "../model/place.model";
 import {FeaturedPlacesFilterPipe} from "../pipes/FeaturedPlacesFilterPipe";
 import {FeaturedPlaceComponent} from "../shared/featured-place/featured-place.component";
 import {CommonPlaceComponent} from "../shared/common-place/common-place.component";

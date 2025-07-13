@@ -6,14 +6,13 @@ import {
     IonButton,
     IonButtons,
     IonContent,
-    IonHeader, IonSpinner,
+    IonHeader,
     IonTitle,
-    IonToolbar, NavController
+    IonToolbar,
+    NavController
 } from '@ionic/angular/standalone';
 import {ActivatedRoute, RouterLink} from "@angular/router";
-import {Place} from "../../place.model";
-import {PlacesService} from "../../places.service";
-import {resolve} from "@angular/compiler-cli";
+import {Place} from "../../model/place.model";
 import {ActivatedRouteService} from "../../shared/activated-route.service";
 
 @Component({
@@ -21,7 +20,7 @@ import {ActivatedRouteService} from "../../shared/activated-route.service";
     templateUrl: './offer-bookings.page.html',
     styleUrls: ['./offer-bookings.page.scss'],
     standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonBackButton, IonButtons, IonButton, RouterLink, IonSpinner]
+    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonBackButton, IonButtons, IonButton, RouterLink]
 })
 export class OfferBookingsPage implements OnInit {
 

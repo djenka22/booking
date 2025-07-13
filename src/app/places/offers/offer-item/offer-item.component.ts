@@ -1,5 +1,5 @@
 import {Component, input, OnInit} from '@angular/core';
-import {Place} from "../../place.model";
+import {Place} from "../../model/place.model";
 import {IonIcon, IonItemOption, IonItemOptions, IonItemSliding, NavController,} from "@ionic/angular/standalone";
 import {CommonPlaceComponent} from "../../shared/common-place/common-place.component";
 import {addIcons} from "ionicons";

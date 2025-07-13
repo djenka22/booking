@@ -13,7 +13,7 @@ import {
     IonToolbar,
     NavController
 } from '@ionic/angular/standalone';
-import {Place} from "../../place.model";
+import {Place} from "../../model/place.model";
 import {ActivatedRoute} from "@angular/router";
 import {ActivatedRouteService} from "../../shared/activated-route.service";
 import {addIcons} from "ionicons";

@@ -13,7 +13,7 @@ import {
     IonTextarea
 } from "@ionic/angular/standalone";
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
-import {Place} from "../../place.model";
+import {Place} from "../../model/place.model";
 
 @Component({
     selector: 'app-offer-form',

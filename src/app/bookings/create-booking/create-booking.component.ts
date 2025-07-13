@@ -19,7 +19,7 @@ import {
     IonTitle,
     IonToolbar
 } from "@ionic/angular/standalone";
-import {Place} from "../../places/place.model";
+import {Place} from "../../places/model/place.model";
 import {addIcons} from "ionicons";
 import {checkmarkOutline, closeOutline} from "ionicons/icons";
 import {FormsModule, NgForm, ReactiveFormsModule} from "@angular/forms";

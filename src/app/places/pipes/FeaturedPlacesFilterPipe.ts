@@ -1,5 +1,5 @@
 import {Pipe, PipeTransform} from "@angular/core";
-import {Place} from "../place.model";
+import {Place} from "../model/place.model";
 
 @Pipe({
     name: "featuredPlaces",

@@ -17,7 +17,7 @@ import {
 } from '@ionic/angular/standalone';
 import {OfferItemComponent} from "./offer-item/offer-item.component";
 import {PlacesService} from "../places.service";
-import {Place} from "../place.model";
+import {Place} from "../model/place.model";
 import {addIcons} from "ionicons";
 import {addOutline} from "ionicons/icons";
 import {RouterLink} from "@angular/router";
@@ -47,8 +47,8 @@ export class OffersPage implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.placesSubscription = this.placesService.places.subscribe(
-            places => {this.offers = places;
-            });
+            places => this.offers = places
+        )
     }
 
 }
