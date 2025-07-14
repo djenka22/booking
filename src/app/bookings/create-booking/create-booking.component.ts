@@ -68,7 +68,7 @@ export class CreateBookingComponent implements OnInit {
 
 
     ngOnInit() {
-        console.log('CreateBookingComponent initialized with place:', this.place());
+        console.log('CreateBookingComponent ngOnInit');
         const availableFrom = this.place().availableFrom.toDate();
         const availableTo = this.place().availableTo.toDate();
 

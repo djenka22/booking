@@ -3,12 +3,23 @@
       <ion-buttons slot="start">
           <ion-back-button default-href="/places/tabs/offers"></ion-back-button>
       </ion-buttons>
-      <ion-title>{{ _place?.title }}</ion-title>
+      <ion-title>{{ place?.title }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-    <ion-button class="ion-margin" color="primary" [routerLink]="['/', 'places', 'tabs', 'offers', 'edit', _place?.id]">
-        Edit
-    </ion-button>
+    @if (fetchLoading) {
+        <ion-grid>
+            <ion-row>
+                <ion-col size="12" size-md="6" offset-md="3" class="ion-text-center">
+                    <ion-spinner>Loading</ion-spinner>
+                </ion-col>
+            </ion-row>
+        </ion-grid>
+    } @else {
+        <ion-button class="ion-margin" color="primary" [routerLink]="['/', 'places', 'tabs', 'offers', 'edit', place?.id]">
+            Edit
+        </ion-button>
+    }
+    <ion-alert></ion-alert>
 </ion-content>

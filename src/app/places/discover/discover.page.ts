@@ -7,11 +7,11 @@ import {
     IonContent,
     IonGrid,
     IonHeader,
-    IonList,
     IonMenuButton,
     IonRow,
     IonSegment,
     IonSegmentButton,
+    IonSpinner,
     IonTitle,
     IonToolbar
 } from '@ionic/angular/standalone';
@@ -30,7 +30,7 @@ import {AuthService} from "../../auth/auth.service";
     templateUrl: './discover.page.html',
     styleUrls: ['./discover.page.scss'],
     standalone: true,
-    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonGrid, IonRow, IonCol, IonList, FeaturedPlacesFilterPipe, IonButtons, FeaturedPlaceComponent, IonMenuButton, CommonPlaceComponent, CdkVirtualScrollViewport, CdkFixedSizeVirtualScroll, CdkVirtualForOf, IonSegment, IonSegmentButton]
+    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonGrid, IonRow, IonCol, FeaturedPlacesFilterPipe, IonButtons, FeaturedPlaceComponent, IonMenuButton, CommonPlaceComponent, CdkVirtualScrollViewport, CdkFixedSizeVirtualScroll, CdkVirtualForOf, IonSegment, IonSegmentButton, IonSpinner]
 })
 export class DiscoverPage implements OnInit, OnDestroy {
 
@@ -38,7 +38,7 @@ export class DiscoverPage implements OnInit, OnDestroy {
     loadedPlaces!: Place[];
     placesSubscription!: Subscription
     presentedPlaces!: Place[];
-    loading: boolean = false;
+    fetchLoading: boolean = false;
     activeFilter = 'bookable';
 
     constructor(private placesService: PlacesService,
@@ -57,9 +57,16 @@ export class DiscoverPage implements OnInit, OnDestroy {
             places => {
                 this.loadedPlaces = places;
                 this.setFilteredPlaces(this.activeFilter);
-                console.log('DiscoverPage ngOnInit - places loaded', this.loadedPlaces);
             }
         );
+    }
+
+    ionViewWillEnter() {
+        this.fetchLoading = true;
+        console.log('DiscoverPage ionViewWillEnter');
+        this.placesService.fetchPlaces().subscribe(
+            () => this.fetchLoading = false
+        )
     }
 
     onFilterUpdate($event: CustomEvent<SegmentChangeEventDetail>) {

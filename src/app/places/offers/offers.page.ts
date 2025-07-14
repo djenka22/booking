@@ -12,6 +12,7 @@ import {
     IonList,
     IonMenuButton,
     IonRow,
+    IonSpinner,
     IonTitle,
     IonToolbar
 } from '@ionic/angular/standalone';
@@ -22,20 +23,23 @@ import {addIcons} from "ionicons";
 import {addOutline} from "ionicons/icons";
 import {RouterLink} from "@angular/router";
 import {Subscription} from "rxjs";
+import {AuthService} from "../../auth/auth.service";
 
 @Component({
     selector: 'app-offers',
     templateUrl: './offers.page.html',
     styleUrls: ['./offers.page.scss'],
     standalone: true,
-    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonCol, IonGrid, IonList, IonRow, OfferItemComponent, IonButtons, IonButton, IonIcon, RouterLink, IonMenuButton]
+    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonCol, IonGrid, IonList, IonRow, OfferItemComponent, IonButtons, IonButton, IonIcon, RouterLink, IonMenuButton, IonSpinner]
 })
 export class OffersPage implements OnInit, OnDestroy {
 
+    loading: boolean = false;
     offers!: Place[];
     private placesSubscription!: Subscription;
 
-    constructor(private placesService: PlacesService) {
+    constructor(private placesService: PlacesService,
+                private authService: AuthService) {
         addIcons({addOutline})
     }
 
@@ -46,8 +50,13 @@ export class OffersPage implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.placesSubscription = this.placesService.places.subscribe(
-            places => this.offers = places
+        console.log('OffersPage ngOnInit');
+        this.loading = true;
+        this.placesSubscription = this.placesService.getOffersByUserId(this.authService.userId).subscribe(
+            places => {
+                this.offers = places;
+                this.loading = false;
+            }
         )
     }
 

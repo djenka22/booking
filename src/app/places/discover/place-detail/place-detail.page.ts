@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {
+    AlertController,
     IonActionSheet,
     IonBackButton,
     IonButton,
@@ -14,6 +15,7 @@ import {
     IonLoading,
     IonModal,
     IonRow,
+    IonSpinner,
     IonTitle,
     IonToolbar,
     NavController
@@ -25,13 +27,14 @@ import {CreateBookingComponent} from "../../../bookings/create-booking/create-bo
 import {BookingService} from "../../../bookings/booking.service";
 import {CreateBookingDto} from "../../../bookings/booking.model";
 import {AuthService} from "../../../auth/auth.service";
+import {PlacesService} from "../../places.service";
 
 @Component({
     selector: 'app-place-detail',
     templateUrl: './place-detail.page.html',
     styleUrls: ['./place-detail.page.scss'],
     standalone: true,
-    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonButtons, IonBackButton, IonButton, IonModal, CreateBookingComponent, IonActionSheet, IonImg, IonGrid, IonRow, IonCol, IonLoading]
+    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonButtons, IonBackButton, IonButton, IonModal, CreateBookingComponent, IonActionSheet, IonImg, IonGrid, IonRow, IonCol, IonLoading, IonSpinner]
 })
 export class PlaceDetailPage implements OnInit {
 
@@ -41,6 +44,8 @@ export class PlaceDetailPage implements OnInit {
     private _bookModalActionMode!: 'select' | 'random';
     private _loading: boolean = false;
     isBookable: boolean = false;
+    private _fetchLoading: boolean = false;
+
 
     public actionSheetButtons = [
         {
@@ -68,25 +73,52 @@ export class PlaceDetailPage implements OnInit {
                 private activatedRouteService: ActivatedRouteService,
                 private activatedRoute: ActivatedRoute,
                 private bookingService: BookingService,
-                private authService: AuthService) {
+                private authService: AuthService,
+                private alertController: AlertController,
+                private placeService: PlacesService) {
     }
 
 
     ngOnInit() {
-        try {
-            this.activatedRouteService.findPlaceBasedOnRoute(this.activatedRoute, 'placeId').subscribe(
-                place => {
+        this._fetchLoading = true;
+        this.activatedRouteService.findPlaceBasedOnRoute(this.activatedRoute, 'placeId').subscribe(
+            {
+                next: place => {
                     this.place = place;
                     this.isBookable = place.userId !== this.authService.userId;
+                },
+                error: () => {
+                    this.alertController.create({
+                        header: 'An error occurred',
+                        message: 'Could not load place details. Please try again later.',
+                        buttons: [{
+                            text: 'Okay',
+                            handler: () => {
+                                this.navController.navigateBack('/places/tabs/discover');
+                            }
+                        }]
+                    }).then(alert => {
+                        alert.present();
+                    })
+                },
+                complete: () => {
+                    this._fetchLoading = false;
                 }
-            );
-        } catch (error) {
-            console.error('Error fetching place details:', error);
-            setTimeout(() => {
-                this.navController.navigateBack('/places/tabs/discover');
-                return;
-            }, 400);
-        }
+            })
+    }
+
+    ionViewWillEnter() {
+        this.placeService.validatePlaceUpdated(this.place).subscribe(
+            place => {
+                if (place) {
+                    this.place = place;
+                }
+            }
+        );
+    }
+
+    get fetchLoading() {
+        return this._fetchLoading;
     }
 
     get loading() {

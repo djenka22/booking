@@ -5,10 +5,14 @@ import {
     IonBackButton,
     IonButton,
     IonButtons,
+    IonCol,
     IonContent,
+    IonGrid,
     IonHeader,
     IonIcon,
     IonLoading,
+    IonRow,
+    IonSpinner,
     IonTitle,
     IonToolbar,
     NavController
@@ -26,13 +30,14 @@ import {PlacesService} from "../../places.service";
     templateUrl: './edit-offer.page.html',
     styleUrls: ['./edit-offer.page.scss'],
     standalone: true,
-    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonBackButton, IonButtons, ReactiveFormsModule, IonButton, IonIcon, OfferFormComponent, IonLoading]
+    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonBackButton, IonButtons, ReactiveFormsModule, IonButton, IonIcon, OfferFormComponent, IonLoading, IonSpinner, IonGrid, IonRow, IonCol]
 })
 export class EditOfferPage implements OnInit {
 
     private _place!: Place;
     private _offerForm?: FormGroup;
     private _loading: boolean = false;
+    private _fetchLoading: boolean = false;
 
     constructor(private navController: NavController,
                 private activatedRoute: ActivatedRoute,
@@ -44,15 +49,22 @@ export class EditOfferPage implements OnInit {
 
     ngOnInit() {
         try {
+            this._fetchLoading = true;
+
             this.activatedRouteService.findPlaceBasedOnRoute(this.activatedRoute, 'offerId').subscribe(
                 p => {
                     this._place = p;
+                    this._fetchLoading = false;
                 }
             )
         } catch (e) {
             this.navController.navigateBack('/places/tabs/offers');
             return;
         }
+    }
+
+    get fetchLoading() {
+        return this._fetchLoading;
     }
 
     get place() {
@@ -63,22 +75,20 @@ export class EditOfferPage implements OnInit {
         return this._loading;
     }
 
-    onSaveOffer() {
+    async onSaveOffer() {
         if (this._offerForm?.invalid) {
             return;
         }
         this._loading = true;
-        this.placesService.updatePlace(
+        await this.placesService.update(
             this.place.id,
             this.offerForm?.value['title'],
             this.offerForm?.value['description'],
             this.offerForm?.value['price'],
             new Date(this.offerForm?.value['availableFrom']),
             new Date(this.offerForm?.value['availableTo'])
-        ).subscribe(() => {
-            this._offerForm?.reset();
-            this._loading = false;
-        });
+        );
+        this._loading = false;
     }
 
     onFormReady($event: FormGroup) {
@@ -91,5 +101,6 @@ export class EditOfferPage implements OnInit {
 
     onOfferUpdated() {
         this.navController.navigateBack(['/', 'places', 'tabs', 'offers', this._place.id]);
+        this._offerForm?.reset();
     }
 }

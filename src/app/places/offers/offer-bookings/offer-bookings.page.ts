@@ -2,11 +2,17 @@ import {Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {
+    AlertController,
+    IonAlert,
     IonBackButton,
     IonButton,
     IonButtons,
+    IonCol,
     IonContent,
+    IonGrid,
     IonHeader,
+    IonRow,
+    IonSpinner,
     IonTitle,
     IonToolbar,
     NavController
@@ -14,31 +20,72 @@ import {
 import {ActivatedRoute, RouterLink} from "@angular/router";
 import {Place} from "../../model/place.model";
 import {ActivatedRouteService} from "../../shared/activated-route.service";
+import {PlacesService} from "../../places.service";
 
 @Component({
     selector: 'app-offer-bookings',
     templateUrl: './offer-bookings.page.html',
     styleUrls: ['./offer-bookings.page.scss'],
     standalone: true,
-    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonBackButton, IonButtons, IonButton, RouterLink]
+    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonBackButton, IonButtons, IonButton, RouterLink, IonCol, IonGrid, IonRow, IonSpinner, IonAlert]
 })
 export class OfferBookingsPage implements OnInit {
 
-    _place!: Place;
+    private _place!: Place;
+    private _fetchLoading: boolean = false;
 
     constructor(private navController: NavController,
                 private activatedRouteService: ActivatedRouteService,
-                private activatedRoute: ActivatedRoute){
+                private activatedRoute: ActivatedRoute,
+                private placeService: PlacesService,
+                private alertController: AlertController) {
     }
 
     ngOnInit() {
-        try {
-            this.activatedRouteService.findPlaceBasedOnRoute(this.activatedRoute,'placeId').subscribe(
-                p => this._place = p
-            );
-        } catch (e) {
-            this.navController.navigateBack('/places/tabs/offers');
-            return;
-        }
+        console.log('OfferBookingsPage ngOnInit');
+        this._fetchLoading = true;
+        this.activatedRouteService.findPlaceBasedOnRoute(this.activatedRoute, 'placeId').subscribe(
+            {
+                next: p => {
+                    console.log('Observable emitted a value (next callback).');
+                    this._place = p;
+                },
+                error: () => {
+                    this.alertController.create({
+                        header: 'An error occurred',
+                        message: 'Could not load offer details. Please try again later.',
+                        buttons: [{
+                            text: 'Okay',
+                            handler: () => {
+                                this.navController.navigateBack('/places/tabs/offers');
+                            }
+                        }]
+                    }).then(alert => {
+                        alert.present();
+                    })
+                },
+                complete: () => {
+                    this._fetchLoading = false;
+                }
+            }
+        );
+    }
+
+    ionViewWillEnter() {
+        this.placeService.validatePlaceUpdated(this.place).subscribe(
+            place => {
+                if (place) {
+                    this._place = place;
+                }
+            }
+        );
+    }
+
+    get place(): Place {
+        return this._place;
+    }
+
+    get fetchLoading(): boolean {
+        return this._fetchLoading;
     }
 }
