@@ -10,7 +10,6 @@ import {
     collectionData,
     deleteDoc,
     doc,
-    docData,
     DocumentReference,
     Firestore,
     query,
@@ -50,8 +49,7 @@ export class BookingService {
                     }
                     const bookingsWithPlaceObservables = bookings.map(
                         booking => {
-                            const placeDocRef = doc(this.firestore, 'places', booking.place.id);
-                            const placeObservable = docData(placeDocRef, {idField: 'id'}) as Observable<Place>;
+                            const placeObservable = this.placesService.getPlaceById(booking.place.id);
                             return placeObservable.pipe(
                                 take(1),
                                 map(place => {
