@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
-import {Booking,} from "./booking.model";
-import {BehaviorSubject, forkJoin, lastValueFrom, map, Observable, switchMap, take, tap} from "rxjs";
+import {Booking, NewBooking,} from "./booking.model";
+import {BehaviorSubject, forkJoin, lastValueFrom, map, Observable, of, switchMap, take, tap} from "rxjs";
 import {AuthService} from '../auth/auth.service';
 import {PlacesService} from "../places/places.service";
 import {Place} from "../places/model/place.model";
@@ -12,7 +12,9 @@ import {
     doc,
     docData,
     DocumentReference,
-    Firestore
+    Firestore,
+    query,
+    where
 } from "@angular/fire/firestore";
 import {User} from "../auth/user.model";
 
@@ -33,12 +35,19 @@ export class BookingService {
     }
 
     fetchBookings() {
+
         const bookingsRef = collection(this.firestore, 'bookings');
-        const bookingsObservable = collectionData(bookingsRef, {idField: 'id'}) as Observable<Booking[]>;
+        const userDocRef = doc(this.firestore, 'users', this.authService.userId);
+        const q = query(bookingsRef, where("user", "==", userDocRef));
+
+        const bookingsObservable = collectionData(q, {idField: 'id'}) as Observable<Booking[]>;
 
         return bookingsObservable.pipe(
             switchMap(
                 bookings => {
+                    if (bookings.length === 0) {
+                        return of([]);
+                    }
                     const bookingsWithPlaceObservables = bookings.map(
                         booking => {
                             const placeDocRef = doc(this.firestore, 'places', booking.place.id);
@@ -68,8 +77,7 @@ export class BookingService {
             return Promise.reject(new Error('Place with ID ${placeId} not found'));
         }
 
-        const booking = new Booking(
-            '',
+        const booking = new NewBooking(
             doc(this.firestore, 'places', placeId) as DocumentReference<Place>,
             doc(this.firestore, 'users', this.authService.userId) as DocumentReference<User>,
             guestNumber,

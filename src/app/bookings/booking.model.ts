@@ -13,8 +13,21 @@ export class Booking {
                 public bookedFrom: Date,
                 public bookedTo: Date) {
     }
-
 }
+
+export class NewBooking {
+
+    public fetchedPlace?: Place;
+
+    constructor(public place: DocumentReference<Place>,
+                public user: DocumentReference<User>,
+                public guestNumber: number,
+                public bookedFrom: Date,
+                public bookedTo: Date) {
+    }
+}
+
+
 
 export interface CreateBookingDto {
     bookingData?: {
