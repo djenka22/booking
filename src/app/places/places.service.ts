@@ -46,7 +46,6 @@ export class PlacesService {
                 }
             )
         )
-
     }
 
     getOffersByUserId(userId: string) {

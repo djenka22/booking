@@ -151,23 +151,19 @@ export class PlaceDetailPage implements OnInit {
         this.setActionSheetOpen(false);
     }
 
-    onModalClosed(event: CreateBookingDto) {
+    async onModalClosed(event: CreateBookingDto) {
         console.log(event);
         if (event.role === 'confirm' && event.bookingData) {
             this._loading = true;
-            this.bookingService.addBooking(
+            await this.bookingService.addBooking(
                 this.place.id,
-                this.place.title,
-                this.place.imageUrl,
-                event.bookingData.firstName,
-                event.bookingData.lastName,
                 event.bookingData.guestNumber,
                 event.bookingData.startDate,
                 event.bookingData.endDate
-            ).subscribe(() => {
-                this._loading = false;
-                this.closeModal();
-            });
+            );
+            this._loading = false;
+            this.closeModal();
+
         } else {
             this.closeModal();
         }

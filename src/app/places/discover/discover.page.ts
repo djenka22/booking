@@ -37,6 +37,7 @@ export class DiscoverPage implements OnInit, OnDestroy {
     @ViewChild('ionSegment') ionSegment!: IonSegment;
     loadedPlaces!: Place[];
     placesSubscription!: Subscription
+    placesSubscriptionFetch!: Subscription
     presentedPlaces!: Place[];
     fetchLoading: boolean = false;
     activeFilter = 'bookable';
@@ -49,24 +50,26 @@ export class DiscoverPage implements OnInit, OnDestroy {
         if (this.placesSubscription) {
             this.placesSubscription.unsubscribe();
         }
+        if (this.placesSubscriptionFetch) {
+            this.placesSubscriptionFetch.unsubscribe();
+        }
     }
 
     ngOnInit() {
         console.log('DiscoverPage ngOnInit');
+        this.fetchLoading = true;
         this.placesSubscription = this.placesService.places.subscribe(
             places => {
                 this.loadedPlaces = places;
                 this.setFilteredPlaces(this.activeFilter);
+                this.fetchLoading = false;
             }
         );
     }
 
     ionViewWillEnter() {
-        this.fetchLoading = true;
         console.log('DiscoverPage ionViewWillEnter');
-        this.placesService.fetchPlaces().subscribe(
-            () => this.fetchLoading = false
-        )
+        this.placesSubscriptionFetch = this.placesService.fetchPlaces().subscribe();
     }
 
     onFilterUpdate($event: CustomEvent<SegmentChangeEventDetail>) {

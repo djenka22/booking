@@ -9,13 +9,13 @@ import {
     IonGrid,
     IonHeader,
     IonIcon,
-    IonInput,
     IonItem,
     IonLabel,
     IonPopover,
     IonRow,
     IonSelect,
     IonSelectOption,
+    IonSpinner,
     IonTitle,
     IonToolbar
 } from "@ionic/angular/standalone";
@@ -24,6 +24,8 @@ import {addIcons} from "ionicons";
 import {checkmarkOutline, closeOutline} from "ionicons/icons";
 import {FormsModule, NgForm, ReactiveFormsModule} from "@angular/forms";
 import {CreateBookingDto} from "../booking.model";
+import {User} from "../../auth/user.model";
+import {AuthService} from "../../auth/auth.service";
 
 @Component({
     selector: 'app-create-booking',
@@ -40,7 +42,6 @@ import {CreateBookingDto} from "../booking.model";
         IonGrid,
         IonCol,
         IonItem,
-        IonInput,
         FormsModule,
         IonRow,
         IonSelect,
@@ -49,7 +50,8 @@ import {CreateBookingDto} from "../booking.model";
         IonDatetimeButton,
         IonLabel,
         IonPopover,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        IonSpinner
     ]
 })
 export class CreateBookingComponent implements OnInit {
@@ -60,17 +62,25 @@ export class CreateBookingComponent implements OnInit {
     isModalClosed = output<CreateBookingDto>();
     dateFrom!: string;
     dateTo!: string ;
+    loggedInUser!: User;
+    fetchLoading: boolean = false;
 
-    constructor() {
+    constructor(private authService: AuthService) {
         addIcons({closeOutline})
         addIcons({checkmarkOutline})
     }
 
 
     ngOnInit() {
+        this.fetchLoading = true;
+        this.authService.getLoggedInUser().subscribe(user => {
+                this.loggedInUser = user;
+                this.fetchLoading = false;
+        });
         console.log('CreateBookingComponent ngOnInit');
         const availableFrom = this.place().availableFrom.toDate();
         const availableTo = this.place().availableTo.toDate();
+
 
         if (this.bookModalActionMode() === 'random') {
             this.dateFrom = new Date(
@@ -113,8 +123,6 @@ export class CreateBookingComponent implements OnInit {
         }
         this.isModalClosed.emit({
             bookingData: {
-                firstName: this.form.value['first-name'],
-                lastName: this.form.value['last-name'],
                 guestNumber: this.form.value['guest-number'],
                 startDate: this.form.value['date-from'],
                 endDate: this.form.value['date-to']

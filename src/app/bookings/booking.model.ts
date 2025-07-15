@@ -1,13 +1,14 @@
+import {Place} from "../places/model/place.model";
+import {User} from "../auth/user.model";
+import {DocumentReference} from "@angular/fire/firestore";
 
 export class Booking {
 
+    public fetchedPlace?: Place;
+
     constructor(public id: string,
-                public placeId: string,
-                public userId: string,
-                public placeTitle: string,
-                public placeImage: string,
-                public firstName: string,
-                public lastName: string,
+                public place: DocumentReference<Place>,
+                public user: DocumentReference<User>,
                 public guestNumber: number,
                 public bookedFrom: Date,
                 public bookedTo: Date) {
@@ -17,8 +18,6 @@ export class Booking {
 
 export interface CreateBookingDto {
     bookingData?: {
-        firstName: string,
-        lastName: string,
         guestNumber: number,
         startDate: Date,
         endDate: Date

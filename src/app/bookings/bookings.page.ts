@@ -17,6 +17,7 @@ import {
     IonLoading,
     IonMenuButton,
     IonRow,
+    IonSpinner,
     IonTitle,
     IonToolbar
 } from '@ionic/angular/standalone';
@@ -25,21 +26,25 @@ import {Booking} from "./booking.model";
 import {addIcons} from "ionicons";
 import {trashOutline} from "ionicons/icons";
 import {Subscription} from "rxjs";
+import {PlacesService} from "../places/places.service";
 
 @Component({
     selector: 'app-bookings',
     templateUrl: './bookings.page.html',
     styleUrls: ['./bookings.page.scss'],
     standalone: true,
-    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonButtons, IonMenuButton, IonList, IonGrid, IonItemSliding, IonItem, IonItemOptions, IonItemOption, IonLabel, IonRow, IonCol, IonIcon, IonLoading]
+    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonButtons, IonMenuButton, IonList, IonGrid, IonItemSliding, IonItem, IonItemOptions, IonItemOption, IonLabel, IonRow, IonCol, IonIcon, IonLoading, IonSpinner]
 })
 export class BookingsPage implements OnInit, OnDestroy {
 
     loadedBookings!: Booking[];
     bookingsSubscription!: Subscription;
+    bookingsSubscriptionFetch!: Subscription;
     _loading: boolean = false;
+    fetchLoading: boolean = true;
 
-    constructor(private bookingsService: BookingService) {
+    constructor(private bookingsService: BookingService,
+                private placesService: PlacesService) {
         addIcons({trashOutline})
     }
 
@@ -47,25 +52,36 @@ export class BookingsPage implements OnInit, OnDestroy {
         if (this.bookingsSubscription) {
             this.bookingsSubscription.unsubscribe();
         }
+        if (this.bookingsSubscriptionFetch) {
+            this.bookingsSubscriptionFetch.unsubscribe();
+        }
     }
 
     ngOnInit() {
+
+        this.fetchLoading = true;
         this.bookingsSubscription = this.bookingsService.bookings.subscribe(bookings => {
+
             this.loadedBookings = bookings;
+            this.fetchLoading = false;
         });
+    }
+
+    ionViewWillEnter() {
+        this.bookingsSubscriptionFetch = this.bookingsService.fetchBookings().subscribe();
     }
 
     get loading() {
         return this._loading;
     }
 
-    onCancelBooking(bookingId: string, slidingItem: IonItemSliding) {
+    async onCancelBooking(bookingId: string, slidingItem: IonItemSliding) {
         this._loading = true;
-        this.bookingsService.cancelBooking(bookingId).subscribe(() => {
-            console.log(this.loading);
-            this._loading = false;
-            console.log(this.loading);
-            slidingItem.close();
-        });
+        await this.bookingsService.cancelBooking(bookingId).then(
+            () => {
+                this._loading = false;
+                slidingItem.close();
+            }
+        );
     }
 }
