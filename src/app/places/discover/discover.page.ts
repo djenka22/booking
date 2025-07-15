@@ -57,19 +57,19 @@ export class DiscoverPage implements OnInit, OnDestroy {
 
     ngOnInit() {
         console.log('DiscoverPage ngOnInit');
-        this.fetchLoading = true;
         this.placesSubscription = this.placesService.places.subscribe(
             places => {
                 this.loadedPlaces = places;
                 this.setFilteredPlaces(this.activeFilter);
-                this.fetchLoading = false;
             }
         );
     }
 
     ionViewWillEnter() {
-        console.log('DiscoverPage ionViewWillEnter');
-        this.placesSubscriptionFetch = this.placesService.fetchPlaces().subscribe();
+        this.fetchLoading = true;
+        this.placesSubscriptionFetch = this.placesService.fetchPlaces().subscribe(
+            () => this.fetchLoading = false
+        );
     }
 
     onFilterUpdate($event: CustomEvent<SegmentChangeEventDetail>) {

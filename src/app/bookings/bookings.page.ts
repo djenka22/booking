@@ -58,17 +58,17 @@ export class BookingsPage implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-
-        this.fetchLoading = true;
+        console.log('BookingsPage ngOnInit');
         this.bookingsSubscription = this.bookingsService.bookings.subscribe(bookings => {
-
             this.loadedBookings = bookings;
-            this.fetchLoading = false;
         });
     }
 
     ionViewWillEnter() {
-        this.bookingsSubscriptionFetch = this.bookingsService.fetchBookings().subscribe();
+        this.fetchLoading = true;
+        this.bookingsSubscriptionFetch = this.bookingsService.fetchBookings().subscribe(
+            () => this.fetchLoading = false
+        );
     }
 
     get loading() {
