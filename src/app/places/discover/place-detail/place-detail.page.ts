@@ -25,7 +25,7 @@ import {Place} from "../../model/place.model";
 import {ActivatedRouteService} from "../../shared/activated-route.service";
 import {CreateBookingComponent} from "../../../bookings/create-booking/create-booking.component";
 import {BookingService} from "../../../bookings/booking.service";
-import {CreateBookingDto} from "../../../bookings/booking.model";
+import {Booking, CreateBookingDto} from "../../../bookings/booking.model";
 import {AuthService} from "../../../auth/auth.service";
 import {PlacesService} from "../../places.service";
 
@@ -45,6 +45,7 @@ export class PlaceDetailPage implements OnInit {
     private _loading: boolean = false;
     isBookable: boolean = false;
     private _fetchLoading: boolean = false;
+    private _existingBooking!: Booking
 
 
     public actionSheetButtons = [
@@ -83,11 +84,18 @@ export class PlaceDetailPage implements OnInit {
         this._fetchLoading = true;
         this.activatedRouteService.findPlaceBasedOnRoute(this.activatedRoute, 'placeId').subscribe(
             {
-                next: place => {
+                next: async place => {
                     this.place = place;
                     this.isBookable = place.userId !== this.authService.userId;
+                    await this.bookingService.findBookingByPlaceIdAndUserId(this.place.id, this.authService.userId).then((booking) => {
+                        if (booking) {
+                            this._existingBooking = booking;
+                        }
+                        this._fetchLoading = false;
+                    });
                 },
                 error: () => {
+                    this._fetchLoading = false;
                     this.alertController.create({
                         header: 'An error occurred',
                         message: 'Could not load place details. Please try again later.',
@@ -100,9 +108,6 @@ export class PlaceDetailPage implements OnInit {
                     }).then(alert => {
                         alert.present();
                     })
-                },
-                complete: () => {
-                    this._fetchLoading = false;
                 }
             })
     }
@@ -115,6 +120,10 @@ export class PlaceDetailPage implements OnInit {
                 }
             }
         );
+    }
+
+    get existingBooking() {
+        return this._existingBooking;
     }
 
     get fetchLoading() {
@@ -151,20 +160,34 @@ export class PlaceDetailPage implements OnInit {
         this.setActionSheetOpen(false);
     }
 
-    async onModalClosed(event: CreateBookingDto) {
-        console.log(event);
-        if (event.role === 'confirm' && event.bookingData) {
-            this._loading = true;
-            await this.bookingService.addBooking(
-                this.place.id,
-                event.bookingData.guestNumber,
-                event.bookingData.startDate,
-                event.bookingData.endDate
-            );
-            this._loading = false;
-            this.closeModal();
+    openBookModalForEdit() {
+        this.setModalOpen(true);
+    }
 
-        } else {
+    async onModalClosed(event: CreateBookingDto) {
+        if (event.role === 'cancel') {
+            this.closeModal();
+            return;
+        }
+
+        if (event.bookingData) {
+            this._loading = true;
+            if (event.role === 'confirm') {
+                await this.bookingService.addBooking(
+                    this.place.id,
+                    event.bookingData.guestNumber,
+                    event.bookingData.startDate,
+                    event.bookingData.endDate
+                );
+            } else {
+                await this.bookingService.updateBooking(
+                    this._existingBooking.id,
+                    event.bookingData.startDate,
+                    event.bookingData.endDate,
+                    event.bookingData.guestNumber,
+                );
+            }
+            this._loading = false;
             this.closeModal();
         }
     }

@@ -1,6 +1,7 @@
 import {Place} from "../places/model/place.model";
 import {User} from "../auth/user.model";
 import {DocumentReference} from "@angular/fire/firestore";
+import {Timestamp} from "firebase/firestore";
 
 export class Booking {
 
@@ -10,8 +11,8 @@ export class Booking {
                 public place: DocumentReference<Place>,
                 public user: DocumentReference<User>,
                 public guestNumber: number,
-                public bookedFrom: Date,
-                public bookedTo: Date) {
+                public bookedFrom: Timestamp,
+                public bookedTo: Timestamp) {
     }
 }
 
@@ -22,8 +23,8 @@ export class NewBooking {
     constructor(public place: DocumentReference<Place>,
                 public user: DocumentReference<User>,
                 public guestNumber: number,
-                public bookedFrom: Date,
-                public bookedTo: Date) {
+                public bookedFrom: Timestamp,
+                public bookedTo: Timestamp) {
     }
 }
 
@@ -35,5 +36,5 @@ export interface CreateBookingDto {
         startDate: Date,
         endDate: Date
     },
-    role: 'cancel' | 'confirm'
+    role: 'cancel' | 'confirm' | 'update'
 }

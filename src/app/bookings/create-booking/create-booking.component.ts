@@ -23,7 +23,7 @@ import {Place} from "../../places/model/place.model";
 import {addIcons} from "ionicons";
 import {checkmarkOutline, closeOutline} from "ionicons/icons";
 import {FormsModule, NgForm, ReactiveFormsModule} from "@angular/forms";
-import {CreateBookingDto} from "../booking.model";
+import {Booking, CreateBookingDto} from "../booking.model";
 import {User} from "../../auth/user.model";
 import {AuthService} from "../../auth/auth.service";
 
@@ -57,13 +57,15 @@ import {AuthService} from "../../auth/auth.service";
 export class CreateBookingComponent implements OnInit {
 
     @ViewChild('bookingForm') form!: NgForm;
-    bookModalActionMode = input.required<'select' | 'random'>();
+    bookModalActionMode = input<'select' | 'random'>();
     place = input.required<Place>();
+    existingBooking = input.required<Booking>();
     isModalClosed = output<CreateBookingDto>();
     dateFrom!: string;
     dateTo!: string ;
     loggedInUser!: User;
     fetchLoading: boolean = false;
+    guestNumber: string = '2'
 
     constructor(private authService: AuthService) {
         addIcons({closeOutline})
@@ -82,23 +84,34 @@ export class CreateBookingComponent implements OnInit {
         const availableTo = this.place().availableTo.toDate();
 
 
-        if (this.bookModalActionMode() === 'random') {
-            this.dateFrom = new Date(
-                availableFrom.getTime() +
-                Math.random() *
-                (availableTo.getTime() - 7 * 24 * 60 * 60 * 1000 - availableFrom.getTime())
-            ).toISOString();
+        if (this.bookModalActionMode()) {
+            if (this.bookModalActionMode() === 'random') {
+                this.dateFrom = new Date(
+                    availableFrom.getTime() +
+                    Math.random() *
+                    (availableTo.getTime() - 7 * 24 * 60 * 60 * 1000 - availableFrom.getTime())
+                ).toISOString();
 
-            this.dateTo = new Date(
-                new Date(this.dateFrom).getTime()
-                + Math.random() *
-                (new Date(this.dateFrom).getTime() + 6 * 24 * 60 * 60 * 1000 - new Date(this.dateFrom).getTime())
-            ).toISOString();
+                this.dateTo = new Date(
+                    new Date(this.dateFrom).getTime()
+                    + Math.random() *
+                    (new Date(this.dateFrom).getTime() + 6 * 24 * 60 * 60 * 1000 - new Date(this.dateFrom).getTime())
+                ).toISOString();
 
-        } else {
-            this.dateFrom = this.place().availableFrom.toDate().toISOString();
-            this.dateTo = this.dateFrom;
+            } else {
+                this.dateFrom = this.place().availableFrom.toDate().toISOString();
+                this.dateTo = this.dateFrom;
+            }
         }
+
+        if (this.existingBooking()) {
+            console.log('Existing booking found', this.existingBooking());
+            console.log('Booked from:', this.existingBooking().bookedFrom.toDate());
+            this.dateFrom = this.existingBooking().bookedFrom.toDate().toISOString();
+            this.dateTo = this.existingBooking().bookedTo.toDate().toISOString();
+            this.guestNumber = this.existingBooking().guestNumber.toString();
+        }
+
     }
 
     onCancel() {
@@ -121,13 +134,16 @@ export class CreateBookingComponent implements OnInit {
         if (this.form.invalid) {
             return;
         }
+
+        console.log('Book Place', this.existingBooking());
+
         this.isModalClosed.emit({
             bookingData: {
                 guestNumber: this.form.value['guest-number'],
-                startDate: this.form.value['date-from'],
-                endDate: this.form.value['date-to']
+                startDate: new Date(this.form.value['date-from']),
+                endDate: new Date(this.form.value['date-to'])
             },
-            role: 'confirm'
+            role: this.existingBooking() ? 'update' : 'confirm'
         });
 
     }

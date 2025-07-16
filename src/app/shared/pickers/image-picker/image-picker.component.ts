@@ -39,7 +39,6 @@ export class ImagePickerComponent implements OnInit {
             this.filePickerRef?.nativeElement.click();
             return;
         }
-        console.log('oa')
         Camera.getPhoto({
             source: CameraSource.Prompt,
             quality: 50,
