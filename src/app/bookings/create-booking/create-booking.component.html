@@ -31,8 +31,6 @@
                                 <h3>First Name</h3>
                                 <p>{{ loggedInUser.firstName }}</p>
                             </ion-label>
-                           <!-- <ion-label style="font-size: 15px" position="stacked">First Name</ion-label>
-                            <ion-text>{{ loggedInUser.firstName }}</ion-text>-->
                         </ion-item>
                     </ion-col>
                 </ion-row>
@@ -43,8 +41,6 @@
                                 <h3>Last Name</h3>
                                 <p>{{ loggedInUser.lastName }}</p>
                             </ion-label>
-<!--                            <ion-label style="font-size: 15px" position="stacked">Last Name</ion-label>
-                            <ion-text>{{ loggedInUser.lastName }}</ion-text>-->
                         </ion-item>
                     </ion-col>
                 </ion-row>
@@ -106,7 +102,7 @@
                     </ion-col>
                 </ion-row>
                 <ion-row>
-                    <ion-col>
+                    <ion-col class="ion-padding-top">
                         <ion-button color="primary" type="submit" expand="block" [disabled]="bookingForm.invalid">
                             Book!
                         </ion-button>

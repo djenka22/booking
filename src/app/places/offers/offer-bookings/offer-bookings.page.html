@@ -1,10 +1,10 @@
-<ion-header >
-  <ion-toolbar>
-      <ion-buttons slot="start">
-          <ion-back-button default-href="/places/tabs/offers"></ion-back-button>
-      </ion-buttons>
-      <ion-title>{{ place?.title }}</ion-title>
-  </ion-toolbar>
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button default-href="/places/tabs/offers"></ion-back-button>
+        </ion-buttons>
+        <ion-title>{{ place?.title }}</ion-title>
+    </ion-toolbar>
 </ion-header>
 
 <ion-content>
@@ -17,9 +17,36 @@
             </ion-row>
         </ion-grid>
     } @else {
-        <ion-button class="ion-margin" color="primary" [routerLink]="['/', 'places', 'tabs', 'offers', 'edit', place?.id]">
-            Edit
-        </ion-button>
+        <ion-grid class="ion-no-padding">
+            <ion-row>
+                <ion-col size-sm="6" offset-sm="3" class="ion-no-padding">
+                    <ion-img [src]="place.imageUrl"></ion-img>
+                </ion-col>
+            </ion-row>
+            <ion-row>
+                <ion-col size-sm="6" offset-sm="3" class="ion-text-center">
+                    <p>{{ place.description }}</p>
+                </ion-col>
+            </ion-row>
+            <ion-row>
+                <ion-col size="6" class="ion-text-center">
+                    <h4>Available from</h4>
+                    <p>{{ place.availableFrom.toDate() | date }}</p>
+                </ion-col>
+                <ion-col size="6" class="ion-text-center">
+                    <h4>Available to</h4>
+                    <p>{{ place.availableTo.toDate() | date }}</p>
+                </ion-col>
+            </ion-row>
+            <ion-row>
+                <ion-col class="ion-text-center ion-padding">
+                    <ion-button class="ion-margin"
+                                color="primary"
+                                [routerLink]="['/', 'places', 'tabs', 'offers', 'edit', place?.id]">Edit</ion-button>
+                </ion-col>
+            </ion-row>
+        </ion-grid>
+
     }
-    <ion-alert></ion-alert>
 </ion-content>
+

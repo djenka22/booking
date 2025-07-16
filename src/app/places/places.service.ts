@@ -15,8 +15,8 @@ import {
     where,
 } from "@angular/fire/firestore";
 import {Timestamp} from "firebase/firestore";
-import {StorageReference, UploadResult} from "@firebase/storage";
-import {getDownloadURL, ref, Storage, uploadBytes} from "@angular/fire/storage";
+import {StorageReference} from "@firebase/storage";
+import {deleteObject, getDownloadURL, ref, Storage, uploadBytes} from "@angular/fire/storage";
 
 @Injectable({
     providedIn: 'root'
@@ -123,11 +123,9 @@ export class PlacesService {
                     fetchedPlace.description !== place.description ||
                     fetchedPlace.availableFrom !== place.availableFrom ||
                     fetchedPlace.availableTo !== place.availableTo) {
-                    console.log('Place updated from server.');
-                    return fetchedPlace; // Return the updated place
+                    return fetchedPlace;
                 } else {
-                    console.log('Place is already up to date.');
-                    return place; // Return the original place if no changes
+                    return of(null);
                 }
             })
         );
@@ -138,15 +136,21 @@ export class PlacesService {
         const storageRef: StorageReference = ref(this.storage, uniqueFileName);
 
         try {
-            const uploadTask: UploadResult = await uploadBytes(storageRef, file);
-            console.log('Image uploaded successfully:', uploadTask);
-
-            const downloadURL: string = await getDownloadURL(storageRef);
-            console.log('Download URL:', downloadURL);
-            return downloadURL;
+            await uploadBytes(storageRef, file);
+            return await getDownloadURL(storageRef);
         } catch (error) {
             console.error('Error uploading image:', error);
             throw error; // Re-throw to be handled by the calling component
+        }
+    }
+
+    async deleteImage(path: string): Promise<void> {
+        const imageRef: StorageReference = ref(this.storage, path);
+        try {
+            await deleteObject(imageRef);
+        } catch (error) {
+            console.error('Error deleting file:', error);
+            throw error;
         }
     }
 }

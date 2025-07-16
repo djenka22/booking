@@ -91,9 +91,11 @@ export class EditOfferPage implements OnInit {
             async (doc) => {
                 const imageFile = this.offerForm?.value['image'] as File;
                 if (this.offerForm?.value['image']) {
-                    const imageUrl = await this.placesService.uploadImage(this.place.id, imageFile);
-                    await this.placesService.updateImageUrl(this.place.id, imageUrl);
+                    const oldImageUrl = this.place.imageUrl;
+                    const newImageUrl = await this.placesService.uploadImage(this.place.id, imageFile);
+                    await this.placesService.updateImageUrl(this.place.id, newImageUrl);
                     this._loading = false;
+                    this.placesService.deleteImage(oldImageUrl)
                 }
             });
     }

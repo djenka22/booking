@@ -3,7 +3,6 @@ import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {
     AlertController,
-    IonAlert,
     IonBackButton,
     IonButton,
     IonButtons,
@@ -11,6 +10,7 @@ import {
     IonContent,
     IonGrid,
     IonHeader,
+    IonImg,
     IonRow,
     IonSpinner,
     IonTitle,
@@ -27,7 +27,7 @@ import {PlacesService} from "../../places.service";
     templateUrl: './offer-bookings.page.html',
     styleUrls: ['./offer-bookings.page.scss'],
     standalone: true,
-    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonBackButton, IonButtons, IonButton, RouterLink, IonCol, IonGrid, IonRow, IonSpinner, IonAlert]
+    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonBackButton, IonButtons, IonButton, RouterLink, IonCol, IonGrid, IonRow, IonSpinner, IonImg]
 })
 export class OfferBookingsPage implements OnInit {
 
