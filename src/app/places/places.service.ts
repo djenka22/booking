@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {AuthService} from "../auth/auth.service";
-import {BehaviorSubject, map, Observable, of, take, tap} from "rxjs";
+import {BehaviorSubject, lastValueFrom, map, Observable, of, take, tap} from "rxjs";
 import {Place} from "./model/place.model";
 import {NewPlace} from "./model/new-place.model";
 import {
@@ -12,9 +12,11 @@ import {
     Firestore,
     query,
     updateDoc,
-    where
+    where,
 } from "@angular/fire/firestore";
 import {Timestamp} from "firebase/firestore";
+import {StorageReference, UploadResult} from "@firebase/storage";
+import {getDownloadURL, ref, Storage, uploadBytes} from "@angular/fire/storage";
 
 @Injectable({
     providedIn: 'root'
@@ -25,7 +27,8 @@ export class PlacesService {
     private _offers = new BehaviorSubject<Place[]>([]);
 
     constructor(private authService: AuthService,
-                private firestore: Firestore) {
+                private firestore: Firestore,
+                private storage: Storage) {
     }
 
     get places() {
@@ -78,7 +81,7 @@ export class PlacesService {
         const newPlace: NewPlace = {
             title,
             description,
-            imageUrl: 'https://media.gettyimages.com/id/2184226101/photo/park-krasi%C5%84skich-in-warsaw-poland.jpg?s=2048x2048&w=gi&k=20&c=fwJhYfrupLCGeyJ54w-jviLfj56-PRZqpJPbR_3EBsY=',
+            imageUrl: '',
             price,
             featured: false,
             availableFrom: dateFrom,
@@ -97,6 +100,15 @@ export class PlacesService {
             price,
             availableFrom: Timestamp.fromDate(availableFrom),
             availableTo: Timestamp.fromDate(availableTo)
+        })
+    }
+
+    async updateImageUrl(placeId: string, imageUrl: string) {
+        const place = await lastValueFrom(this.getPlaceById(placeId).pipe(take(1)));
+        const placeDocRef = doc(this.firestore, 'places', place.id);
+        return updateDoc(placeDocRef, {
+            ...place,
+            imageUrl: imageUrl,
         })
     }
 
@@ -119,5 +131,22 @@ export class PlacesService {
                 }
             })
         );
+    }
+
+    async uploadImage(placeId: string, file: File): Promise<string> {
+        const uniqueFileName = placeId + '_' + file.name; // Generate unique filename
+        const storageRef: StorageReference = ref(this.storage, uniqueFileName);
+
+        try {
+            const uploadTask: UploadResult = await uploadBytes(storageRef, file);
+            console.log('Image uploaded successfully:', uploadTask);
+
+            const downloadURL: string = await getDownloadURL(storageRef);
+            console.log('Download URL:', downloadURL);
+            return downloadURL;
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            throw error; // Re-throw to be handled by the calling component
+        }
     }
 }

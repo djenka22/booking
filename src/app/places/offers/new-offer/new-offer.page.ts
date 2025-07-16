@@ -47,7 +47,8 @@ export class NewOfferPage implements OnInit, OnDestroy {
     }
 
     async onCreateOffer() {
-        if (this._offerForm?.invalid) {
+        if (this._offerForm?.invalid || !this._offerForm?.get('image')?.value) {
+            console.log('Form is invalid or image is not selected');
             return;
         }
         this.loading = true;
@@ -56,11 +57,14 @@ export class NewOfferPage implements OnInit, OnDestroy {
             this._offerForm?.value['description'],
             this._offerForm?.value['price'],
             new Date(this._offerForm?.value['availableFrom']),
-            new Date(this._offerForm?.value['availableTo'])
-        )
-        this._offerForm?.reset();
-        this.loading = false;
-
+            new Date(this._offerForm?.value['availableTo']),
+        ).then(
+            async (doc) => {
+                const imageUrl = await this.placeService.uploadImage(doc.id, this._offerForm?.value['image']);
+                await this.placeService.updateImageUrl(doc.id, imageUrl);
+                this._offerForm?.reset();
+                this.loading = false;
+            });
     }
 
     onOfferCreated() {
@@ -72,6 +76,7 @@ export class NewOfferPage implements OnInit, OnDestroy {
     }
 
     onFormReady($event: FormGroup) {
+        console.log('NewOfferPage: Form is ready', $event);
         this._offerForm = $event;
     }
 }

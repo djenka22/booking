@@ -30,3 +30,5 @@ yarn-error.log*
 www/
 
 android/
+
+ios/

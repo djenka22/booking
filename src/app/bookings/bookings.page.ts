@@ -26,7 +26,6 @@ import {Booking} from "./booking.model";
 import {addIcons} from "ionicons";
 import {trashOutline} from "ionicons/icons";
 import {Subscription} from "rxjs";
-import {PlacesService} from "../places/places.service";
 
 @Component({
     selector: 'app-bookings',
@@ -43,8 +42,7 @@ export class BookingsPage implements OnInit, OnDestroy {
     _loading: boolean = false;
     fetchLoading: boolean = true;
 
-    constructor(private bookingsService: BookingService,
-                private placesService: PlacesService) {
+    constructor(private bookingsService: BookingService) {
         addIcons({trashOutline})
     }
 
@@ -65,9 +63,13 @@ export class BookingsPage implements OnInit, OnDestroy {
     }
 
     ionViewWillEnter() {
+        console.log('BookingsPage ionViewWillEnter');
         this.fetchLoading = true;
         this.bookingsSubscriptionFetch = this.bookingsService.fetchBookings().subscribe(
-            () => this.fetchLoading = false
+            () => {
+                console.log('Bookings fetched successfully');
+                this.fetchLoading = false;
+            }
         );
     }
 

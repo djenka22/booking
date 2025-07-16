@@ -14,6 +14,8 @@ import {
 } from "@ionic/angular/standalone";
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {Place} from "../../model/place.model";
+import {ImagePickerComponent} from "../../../shared/pickers/image-picker/image-picker.component";
+import {FileUtilsService} from "../../../shared/file-utils.service";
 
 @Component({
     selector: 'app-offer-form',
@@ -31,7 +33,8 @@ import {Place} from "../../model/place.model";
         IonPopover,
         IonDatetime,
         IonText,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        ImagePickerComponent
     ]
 })
 export class OfferFormComponent implements OnInit {
@@ -49,7 +52,6 @@ export class OfferFormComponent implements OnInit {
         const dateFrom = this.offer()?.availableFrom.toDate().toISOString() || this.currentDate;
         const dateTo = this.offer()?.availableTo.toDate().toISOString() || this.currentDate;
 
-        console.log('OfferFormComponent initialized with offer:', this.offer());
         this.offerForm = this.formBuilder.group({
             title: [this.offer()?.title, {
                 updateOn: 'change',
@@ -70,7 +72,8 @@ export class OfferFormComponent implements OnInit {
             availableTo: [dateTo, {
                 updateOn: 'blur',
                 validators: [Validators.required]
-            }]
+            }],
+            image: [null]
         })
 
         this.formReady.emit(this.offerForm);
@@ -90,5 +93,21 @@ export class OfferFormComponent implements OnInit {
         if (new Date(newDateFrom) > new Date(currentAvailableToValue)) {
             currentAvailableToControl?.setValue(newDateFrom); // Update the form control directly
         }
+    }
+
+    onImagePick(imageData: string | File) {
+        let imageFile;
+        if (typeof imageData === 'string') {
+            try {
+                imageFile = FileUtilsService.dataUrlToBlob(imageData, 'image/jpeg');
+            } catch (error) {
+                console.error('Error processing image data:', error);
+                return;
+            }
+        } else {
+            imageFile = imageData;
+        }
+
+        this.offerForm.patchValue({image: imageFile});
     }
 }

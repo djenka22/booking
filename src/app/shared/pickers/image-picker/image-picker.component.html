@@ -1,0 +1,25 @@
+<div class="picker">
+
+    @if (selectedImage) {
+        <ion-img class="image"
+                 role="button"
+                 [src]="selectedImage"
+                 (click)="onPickImage()"></ion-img>
+    }
+
+    @if (!selectedImage) {
+        <ion-button color="primary"
+                    (click)="onPickImage()">
+            <ion-icon name="image-outline" slot="start"></ion-icon>
+            <ion-label>Take picture</ion-label>
+        </ion-button>
+    }
+
+    @if(usePicker) {
+        <input type="file"
+               accept="image/*"
+               #filePicker
+               (change)="onFileChosen($event)" />
+    }
+
+</div>

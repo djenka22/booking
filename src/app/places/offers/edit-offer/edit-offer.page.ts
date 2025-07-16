@@ -87,8 +87,15 @@ export class EditOfferPage implements OnInit {
             this.offerForm?.value['price'],
             new Date(this.offerForm?.value['availableFrom']),
             new Date(this.offerForm?.value['availableTo'])
-        );
-        this._loading = false;
+        ).then(
+            async (doc) => {
+                const imageFile = this.offerForm?.value['image'] as File;
+                if (this.offerForm?.value['image']) {
+                    const imageUrl = await this.placesService.uploadImage(this.place.id, imageFile);
+                    await this.placesService.updateImageUrl(this.place.id, imageUrl);
+                    this._loading = false;
+                }
+            });
     }
 
     onFormReady($event: FormGroup) {
