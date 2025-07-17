@@ -80,6 +80,7 @@ export class CreateBookingComponent implements OnInit {
                 this.fetchLoading = false;
         });
         console.log('CreateBookingComponent ngOnInit');
+
         const availableFrom = this.place().availableFrom.toDate();
         const availableTo = this.place().availableTo.toDate();
 
@@ -99,7 +100,7 @@ export class CreateBookingComponent implements OnInit {
                 ).toISOString();
 
             } else {
-                this.dateFrom = this.place().availableFrom.toDate().toISOString();
+                this.dateFrom = this.place().availableFrom.toDate().toISOString(); // update set dateFrom to currentDate OR availableFrom!!!!!!!
                 this.dateTo = this.dateFrom;
             }
         }
@@ -110,6 +111,8 @@ export class CreateBookingComponent implements OnInit {
             this.dateFrom = this.existingBooking().bookedFrom.toDate().toISOString();
             this.dateTo = this.existingBooking().bookedTo.toDate().toISOString();
             this.guestNumber = this.existingBooking().guestNumber.toString();
+            console.log('Date From:', this.dateFrom);
+            console.log('Existing booking date from', this.existingBooking().bookedFrom.toDate().toISOString());
         }
 
     }
@@ -124,6 +127,8 @@ export class CreateBookingComponent implements OnInit {
     onDateFromChange() {
         const newDateFromObj = new Date(this.dateFrom);
         const currentToDateObj = new Date(this.dateTo);
+        console.log('Form value:', this.form.value['date-from']);
+
 
         if (newDateFromObj > currentToDateObj) {
             this.dateTo = this.dateFrom;
@@ -136,9 +141,12 @@ export class CreateBookingComponent implements OnInit {
         }
 
         console.log('Book Place', this.existingBooking());
+        console.log('Form Value:', this.form.value);
+        console.log('Form value date from:', this.form.value['date-from']);
 
         this.isModalClosed.emit({
             bookingData: {
+                existingBookingId: this.existingBooking() ? this.existingBooking().id : undefined,
                 guestNumber: this.form.value['guest-number'],
                 startDate: new Date(this.form.value['date-from']),
                 endDate: new Date(this.form.value['date-to'])

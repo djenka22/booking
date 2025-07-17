@@ -86,4 +86,5 @@ export class DiscoverPage implements OnInit, OnDestroy {
             });
         }
     }
+
 }

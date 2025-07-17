@@ -2,6 +2,7 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormGroup, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {
+    AlertController,
     IonBackButton,
     IonButton,
     IonButtons,
@@ -29,10 +30,12 @@ import {Subscription} from "rxjs";
 export class NewOfferPage implements OnInit, OnDestroy {
     _offerForm?: FormGroup;
     loading: boolean = false;
-    newOfferSubscription!: Subscription
+    newOfferSubscription!: Subscription;
+    createdPlaceTitle: string = '';
 
     constructor(private placeService: PlacesService,
-                private navController: NavController) {
+                private navController: NavController,
+                private alertController: AlertController) {
         addIcons({checkmarkOutline})
         addIcons({calendarOutline})
     }
@@ -60,23 +63,41 @@ export class NewOfferPage implements OnInit, OnDestroy {
             new Date(this._offerForm?.value['availableTo']),
         ).then(
             async (doc) => {
+                this.createdPlaceTitle = this._offerForm?.value['title'];
                 const imageUrl = await this.placeService.uploadImage(doc.id, this._offerForm?.value['image']);
                 await this.placeService.updateImageUrl(doc.id, imageUrl);
-                this._offerForm?.reset();
                 this.loading = false;
             });
     }
 
     onOfferCreated() {
-        this.navController.navigateBack('/places/tabs/offers');
+        this.presentOfferCreatedAlert()
     }
+
 
     get offerForm() {
         return this._offerForm;
     }
 
     onFormReady($event: FormGroup) {
-        console.log('NewOfferPage: Form is ready', $event);
         this._offerForm = $event;
+    }
+
+    private presentOfferCreatedAlert() {
+        return this.alertController.create({
+            header: `${this.createdPlaceTitle}`,
+            message: 'Your offer has been successfully created.',
+            buttons: [{
+                text: 'Okay',
+                role: 'destructive',
+                handler: () => {
+                    this.navController.navigateBack('/places/tabs/offers');
+                    this._offerForm?.reset();
+                }
+
+            }],
+        }).then(alert => {
+            alert.present();
+        })
     }
 }

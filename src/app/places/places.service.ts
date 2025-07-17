@@ -7,6 +7,7 @@ import {
     addDoc,
     collection,
     collectionData,
+    deleteDoc,
     doc,
     docData,
     Firestore,
@@ -103,13 +104,24 @@ export class PlacesService {
         })
     }
 
+    async delete(place: Place) {
+        const placeDocRef = doc(this.firestore, 'places', place.id);
+        await deleteDoc(placeDocRef);
+        this.deleteImage(place.imageUrl);
+    }
+
     async updateImageUrl(placeId: string, imageUrl: string) {
         const place = await lastValueFrom(this.getPlaceById(placeId).pipe(take(1)));
+        const oldImageUrl = place.imageUrl;
         const placeDocRef = doc(this.firestore, 'places', place.id);
         return updateDoc(placeDocRef, {
             ...place,
             imageUrl: imageUrl,
-        })
+        }).then(() => {
+            if (oldImageUrl && oldImageUrl.length > 0) {
+                this.deleteImage(oldImageUrl);
+            }
+        });
     }
 
     validatePlaceUpdated(place: Place): Observable<Place | null> {

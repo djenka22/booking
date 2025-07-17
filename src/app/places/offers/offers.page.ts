@@ -9,6 +9,7 @@ import {
     IonGrid,
     IonHeader,
     IonIcon,
+    IonItemSliding,
     IonList,
     IonMenuButton,
     IonRow,
@@ -37,6 +38,7 @@ export class OffersPage implements OnInit, OnDestroy {
     loading: boolean = false;
     offers!: Place[];
     private placesSubscription!: Subscription;
+    ionItemSliding?: IonItemSliding;
 
     constructor(private placesService: PlacesService,
                 private authService: AuthService) {
@@ -60,4 +62,13 @@ export class OffersPage implements OnInit, OnDestroy {
         )
     }
 
+    ionViewWillEnter() {
+        if (this.ionItemSliding) {
+            this.ionItemSliding.closeOpened();
+        }
+    }
+
+    onSlidingItemOutput(ionItemSliding: IonItemSliding) {
+        this.ionItemSliding = ionItemSliding;
+    }
 }

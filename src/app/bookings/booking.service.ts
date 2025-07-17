@@ -130,7 +130,8 @@ export class BookingService {
             user: data['user'] as DocumentReference<User>,
             guestNumber: data['guestNumber'],
             bookedFrom: data['bookedFrom'],
-            bookedTo: data['bookedTo']
+            bookedTo: data['bookedTo'],
+            fetchedPlace: null
         };
 
         return booking;

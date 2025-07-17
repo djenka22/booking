@@ -47,7 +47,6 @@ export class OfferBookingsPage implements OnInit {
         this.activatedRouteService.findPlaceBasedOnRoute(this.activatedRoute, 'placeId').subscribe(
             {
                 next: p => {
-                    console.log('Observable emitted a value (next callback).');
                     this._place = p;
                 },
                 error: () => {
@@ -88,4 +87,45 @@ export class OfferBookingsPage implements OnInit {
     get fetchLoading(): boolean {
         return this._fetchLoading;
     }
+
+    onDeleteOffer() {
+        this.alertController.create({
+            header: 'Are you sure?',
+            message: 'Are you sure you want to delete this offer?.',
+            buttons: [
+                {
+                    text: 'Cancel',
+                    role: 'cancel',
+                },
+                {
+                    text: 'Delete',
+                    role: 'destructive',
+                    cssClass: 'delete-button-color',
+                    handler: async () => {
+                        await this.deleteOfferAndShowAlert();
+                    }
+                }]
+        }).then(alert => {
+            alert.present();
+        })
+    }
+
+    async deleteOfferAndShowAlert() {
+        await this.placeService.delete(this.place).then(() => {
+            this.alertController.create({
+                header: 'Offer deleted',
+                message: `The offer for ${this.place.title} has been successfully deleted.`,
+                buttons: [{
+                    text: 'Okay',
+                    role: 'destructive',
+                    handler: () => {
+                        this.navController.navigateBack('/places/tabs/offers');
+                    }
+                }]
+            }).then(alert => {
+                alert.present();
+            })
+        })
+    }
+
 }

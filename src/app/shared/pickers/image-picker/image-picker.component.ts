@@ -46,7 +46,6 @@ export class ImagePickerComponent implements OnInit {
             correctOrientation: true,
             width: 600
         }).then(image => {
-            console.log('ola');
           this.selectedImage = image.dataUrl; //(image.dataUrl)
           if (this.selectedImage) {
             this.imagePick.emit(this.selectedImage);

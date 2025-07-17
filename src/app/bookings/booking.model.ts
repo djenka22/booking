@@ -5,7 +5,7 @@ import {Timestamp} from "firebase/firestore";
 
 export class Booking {
 
-    public fetchedPlace?: Place;
+    public fetchedPlace!: Place | null
 
     constructor(public id: string,
                 public place: DocumentReference<Place>,
@@ -32,6 +32,7 @@ export class NewBooking {
 
 export interface CreateBookingDto {
     bookingData?: {
+        existingBookingId?: string,
         guestNumber: number,
         startDate: Date,
         endDate: Date

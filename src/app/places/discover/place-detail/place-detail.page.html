@@ -50,7 +50,7 @@
         <ion-action-sheet [isOpen]="actionSheetOpen" header="Choose an Action" [buttons]="actionSheetButtons"
                           (didDismiss)="setActionSheetOpen(false)">
         </ion-action-sheet>
-        <ion-modal [isOpen]="bookModalOpen" [presentingElement]="page" (didDismiss)="closeModal()">
+        <ion-modal #modal [isOpen]="bookModalOpen" [presentingElement]="page" (didDismiss)="closeModal()">
             <ng-template>
                 <app-create-booking class="full-height-modal-content"
                                     [place]="place"
@@ -60,7 +60,7 @@
                 ></app-create-booking>
             </ng-template>
         </ion-modal>
-        <ion-loading (willDismiss)="onPlaceBooked()" message="Booking place" spinner="circles"
+        <ion-loading message="Booking place" spinner="circles"
                      [isOpen]="loading"></ion-loading>
     </ion-content>
 

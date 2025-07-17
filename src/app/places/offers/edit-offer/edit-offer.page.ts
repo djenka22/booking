@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormGroup, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {
+    AlertController,
     IonBackButton,
     IonButton,
     IonButtons,
@@ -38,11 +39,13 @@ export class EditOfferPage implements OnInit {
     private _offerForm?: FormGroup;
     private _loading: boolean = false;
     private _fetchLoading: boolean = false;
+    createdPlaceTitle: string = '';
 
     constructor(private navController: NavController,
                 private activatedRoute: ActivatedRoute,
                 private activatedRouteService: ActivatedRouteService,
-                private placesService: PlacesService) {
+                private placesService: PlacesService,
+                private alertController: AlertController) {
 
         addIcons({checkmarkOutline});
     }
@@ -89,14 +92,13 @@ export class EditOfferPage implements OnInit {
             new Date(this.offerForm?.value['availableTo'])
         ).then(
             async (doc) => {
+                this.createdPlaceTitle = this._offerForm?.value['title'];
                 const imageFile = this.offerForm?.value['image'] as File;
                 if (this.offerForm?.value['image']) {
-                    const oldImageUrl = this.place.imageUrl;
                     const newImageUrl = await this.placesService.uploadImage(this.place.id, imageFile);
                     await this.placesService.updateImageUrl(this.place.id, newImageUrl);
-                    this._loading = false;
-                    this.placesService.deleteImage(oldImageUrl)
                 }
+                this._loading = false;
             });
     }
 
@@ -109,7 +111,25 @@ export class EditOfferPage implements OnInit {
     }
 
     onOfferUpdated() {
-        this.navController.navigateBack(['/', 'places', 'tabs', 'offers', this._place.id]);
-        this._offerForm?.reset();
+        this.presentOfferEditedAlert();
     }
+
+    private presentOfferEditedAlert() {
+        return this.alertController.create({
+            header: `${this.createdPlaceTitle}`,
+            message: 'Your offer has been successfully updated.',
+            buttons: [{
+                text: 'Okay',
+                role: 'destructive',
+                handler: () => {
+                    this.navController.navigateBack(['/', 'places', 'tabs', 'offers', this._place.id]);
+                    this._offerForm?.reset();
+                }
+
+            }],
+        }).then(alert => {
+            alert.present();
+        })
+    }
+
 }

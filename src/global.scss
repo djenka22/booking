@@ -35,3 +35,27 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 //@import '@ionic/angular/css/palettes/dark.system.css';
+
+
+.alert-button.delete-button-color {
+  color: #ff0000 !important; /* Example: Red color */
+}
+
+// You might also need to target based on platform for more specificity if issues arise
+// For iOS
+.ios .alert-button.delete-button-color {
+  color: #ff0000 !important;
+}
+
+// For Material Design (Android)
+.md .alert-button.delete-button-color {
+  color: #ff0000 !important;
+}
+
+ion-modal .full-height-modal-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+

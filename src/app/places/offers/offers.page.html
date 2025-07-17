@@ -25,6 +25,7 @@
                                     [place]="offer"
                                     [offerDetailPath]="['/', 'places', 'tabs', 'offers', offer.id]"
                                     [editOfferPath]="['/', 'places', 'tabs', 'offers', 'edit', offer.id]"
+                                    (slidingItemOutput)="onSlidingItemOutput($event)"
                             ></app-offer-item>
                         }
                     </ion-list>

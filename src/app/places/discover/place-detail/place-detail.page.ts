@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {
@@ -38,6 +38,7 @@ import {PlacesService} from "../../places.service";
 })
 export class PlaceDetailPage implements OnInit {
 
+    @ViewChild('modal') ionModal?: IonModal;
     place!: Place;
     _bookModalOpen: boolean = false
     _actionSheetOpen = false;
@@ -178,28 +179,49 @@ export class PlaceDetailPage implements OnInit {
                     event.bookingData.guestNumber,
                     event.bookingData.startDate,
                     event.bookingData.endDate
-                );
+                ).then(() => {
+                    this._loading = false;
+                    this.presentBookingAlert("Your booking has been successfully created.");
+                });
             } else {
                 await this.bookingService.updateBooking(
                     this._existingBooking.id,
                     event.bookingData.startDate,
                     event.bookingData.endDate,
                     event.bookingData.guestNumber,
-                );
+                ).then(() => {
+                    this._loading = false;
+                    this.presentBookingAlert("Your booking has been successfully updated.");
+                });
             }
-            this._loading = false;
-            this.closeModal();
         }
     }
 
     onPlaceBooked() {
-        setTimeout(() => {
+        this.closeModal();
+        this.ionModal?.didDismiss.subscribe(() => {
             this.navController.navigateBack('/bookings');
-        }, 200)
+        })
     }
 
     closeModal() {
         this.setModalOpen(false);
+    }
+
+    private presentBookingAlert(message: string) {
+        return this.alertController.create({
+            header: `${this.place.title}`,
+            message: message,
+            buttons: [{
+                text: 'Okay',
+                role: 'destructive',
+                handler: () => {
+                    this.onPlaceBooked();
+                }
+            }],
+        }).then(alert => {
+            alert.present();
+        })
     }
 
 }
