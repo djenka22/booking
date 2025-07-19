@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {
@@ -13,15 +13,15 @@ import {
     IonList,
     IonMenuButton,
     IonRow,
+    IonSearchbar,
     IonSpinner,
-    IonTitle,
     IonToolbar
 } from '@ionic/angular/standalone';
 import {OfferItemComponent} from "./offer-item/offer-item.component";
 import {PlacesService} from "../places.service";
 import {Place} from "../model/place.model";
 import {addIcons} from "ionicons";
-import {addOutline} from "ionicons/icons";
+import {addOutline, searchCircle} from "ionicons/icons";
 import {RouterLink} from "@angular/router";
 import {Subscription} from "rxjs";
 import {AuthService} from "../../auth/auth.service";
@@ -31,18 +31,21 @@ import {AuthService} from "../../auth/auth.service";
     templateUrl: './offers.page.html',
     styleUrls: ['./offers.page.scss'],
     standalone: true,
-    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonCol, IonGrid, IonList, IonRow, OfferItemComponent, IonButtons, IonButton, IonIcon, RouterLink, IonMenuButton, IonSpinner]
+    imports: [IonContent, IonHeader, IonToolbar, CommonModule, FormsModule, IonCol, IonGrid, IonList, IonRow, OfferItemComponent, IonButtons, IonButton, IonIcon, RouterLink, IonMenuButton, IonSpinner, IonSearchbar]
 })
 export class OffersPage implements OnInit, OnDestroy {
+    @ViewChild('searchbar') ionSearchbar!: IonSearchbar;
 
     loading: boolean = false;
-    offers!: Place[];
+    loadedOffers!: Place[];
+    presentedOffers!: Place[];
     private placesSubscription!: Subscription;
     ionItemSliding?: IonItemSliding;
 
     constructor(private placesService: PlacesService,
                 private authService: AuthService) {
         addIcons({addOutline})
+        addIcons({ searchCircle });
     }
 
     ngOnDestroy(): void {
@@ -56,13 +59,16 @@ export class OffersPage implements OnInit, OnDestroy {
         this.loading = true;
         this.placesSubscription = this.placesService.getOffersByUserId(this.authService.userId).subscribe(
             places => {
-                this.offers = places;
+                this.loadedOffers = places;
+                this.presentedOffers = this.loadedOffers;
                 this.loading = false;
             }
         )
     }
 
     ionViewWillEnter() {
+        this.ionSearchbar.value = '';
+
         if (this.ionItemSliding) {
             this.ionItemSliding.closeOpened();
         }
@@ -71,4 +77,23 @@ export class OffersPage implements OnInit, OnDestroy {
     onSlidingItemOutput(ionItemSliding: IonItemSliding) {
         this.ionItemSliding = ionItemSliding;
     }
+
+    onClearSearch() {
+        this.presentedOffers = this.loadedOffers;
+    }
+
+    onSearchChange(event: any) {
+        const keywords: string = event.target.value;
+        if (!keywords || keywords.trim() === '') {
+            this.onClearSearch();
+            return;
+        }
+
+        this.placesService.searchOffers(keywords)
+            .pipe()
+            .subscribe((offers: Place[]) => {
+                this.presentedOffers = offers;
+            })
+    }
+
 }

@@ -1,0 +1,12 @@
+ion-searchbar {
+  --background: var(--ion-color-primary-shade);
+
+  // Set the color for the text inside the searchbar input
+  --color: var(--ion-color-primary-contrast);
+
+  // Set the color for the placeholder text
+  --placeholder-color: --ion-color-primary-contrast-rgb; /* Slightly transparent white for better visibility on a darker background */
+
+  // Set the color for the search icon and the clear button icon
+  --icon-color: var(--ion-color-primary-contrast);
+}

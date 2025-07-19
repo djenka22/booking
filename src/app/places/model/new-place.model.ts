@@ -1,3 +1,5 @@
+import {DocumentReference} from "@angular/fire/firestore";
+import {User} from "../../auth/user.model";
 
 export class NewPlace {
     id?: string;
@@ -8,10 +10,11 @@ export class NewPlace {
     featured: boolean
     availableFrom: Date;
     availableTo: Date;
-    userId: string
+    user: DocumentReference<User>;
+    searchKeywords: string[];
 
 
-    constructor(title: string, description: string, imageUrl: string, price: number, featured: boolean, availableFrom: Date, availableTo: Date, userId: string, id?: string) {
+    constructor(title: string, description: string, imageUrl: string, price: number, featured: boolean, availableFrom: Date, availableTo: Date, user: DocumentReference<User>, searchKeywords: string[], id?: string) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -20,6 +23,7 @@ export class NewPlace {
         this.featured = featured;
         this.availableFrom = availableFrom;
         this.availableTo = availableTo;
-        this.userId = userId;
+        this.user = user;
+        this.searchKeywords = searchKeywords;
     }
 }

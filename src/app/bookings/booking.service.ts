@@ -13,6 +13,7 @@ import {
     DocumentReference,
     Firestore,
     getDocs,
+    limit,
     query,
     updateDoc,
     where
@@ -26,6 +27,7 @@ import {Timestamp} from "firebase/firestore";
 export class BookingService {
 
     private _bookings = new BehaviorSubject<Booking[]>([]);
+    private bookingsCollection = collection(this.firestore, 'bookings');
 
     constructor(private authService: AuthService,
                 private placesService: PlacesService,
@@ -38,7 +40,7 @@ export class BookingService {
 
     fetchBookings() {
 
-        const bookingsRef = collection(this.firestore, 'bookings');
+        const bookingsRef = this.bookingsCollection;
         const userDocRef = doc(this.firestore, 'users', this.authService.userId);
         const q = query(bookingsRef, where("user", "==", userDocRef));
 
@@ -86,7 +88,7 @@ export class BookingService {
             Timestamp.fromDate(dateTo)
         );
 
-        return addDoc(collection(this.firestore, 'bookings'), {...booking, bookedFrom: dateFrom, bookedTo: dateTo});
+        return addDoc(this.bookingsCollection, {...booking, bookedFrom: dateFrom, bookedTo: dateTo});
     }
 
     cancelBooking(bookingId: string) {
@@ -106,7 +108,7 @@ export class BookingService {
     async findBookingByPlaceIdAndUserId(placeId: string, userId: string) {
         console.log('Place Detail Page: ', placeId, userId);
 
-        const bookingsCollection = collection(this.firestore, 'bookings');
+        const bookingsCollection = this.bookingsCollection;
         const userRef = doc(this.firestore, 'users', userId);
         const placeRef = doc(this.firestore, 'places', placeId);
 
@@ -135,7 +137,63 @@ export class BookingService {
         };
 
         return booking;
+    }
 
+    searchBookings(searchTerm: string): Observable<Booking[]> {
+        if (!searchTerm || searchTerm.trim() === '') {
+            return new Observable(observer => observer.next([])); // Return empty if no search term
+        }
 
+        const lowerCaseSearchTerm = searchTerm.toLowerCase();
+
+        // Option 2: `array-contains-any` (finds documents that contain ANY of the individual words in the search term)
+        // This is generally more useful for multi-word searches.
+        const searchTermsArray = lowerCaseSearchTerm.split(/\s+/).filter(term => term.length > 0);
+
+        if (searchTermsArray.length === 0) {
+            return new Observable(observer => observer.next([]));
+        }
+
+        return this.placesService.searchPlaces(searchTerm).pipe(
+            take(1),
+            switchMap(places => {
+                if (places.length === 0) {
+                    return of([]); // No places found
+                }
+
+                const placeRefs = places.map(place => {
+                    return doc(this.firestore, 'places', place.id) as DocumentReference<Place>;
+                });
+                const userRef = doc(this.firestore, 'users', this.authService.userId);
+
+                const q = query(
+                    this.bookingsCollection,
+                    where('place', 'in', placeRefs),
+                    where('user', '==', userRef),
+                    limit(1)
+                );
+
+                const bookingObservable = collectionData(q, {idField: 'id'}) as Observable<Booking[]>;
+                return bookingObservable.pipe(
+                    take(1),
+                    switchMap(bookings => {
+                        if (bookings.length === 0) {
+                            return of([]); // No bookings found
+                        }
+
+                        const bookingsWithPlaceObservables = bookings.map(
+                            booking => {
+                                const placeObservable = this.placesService.getPlaceById(booking.place.id);
+                                return placeObservable.pipe(
+                                    take(1),
+                                    map(place => {
+                                        return {...booking, fetchedPlace: place} as Booking;
+                                    })
+                                );
+                            }
+                        );
+                        return forkJoin(bookingsWithPlaceObservables);
+                    }));
+            }))
     }
 }

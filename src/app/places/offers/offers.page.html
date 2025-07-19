@@ -3,7 +3,9 @@
         <ion-buttons slot="start">
             <ion-menu-button menu="main-menu"></ion-menu-button>
         </ion-buttons>
-        <ion-title>My Offers</ion-title>
+        <ion-searchbar #searchbar (ionClear)="onClearSearch()" search-icon="search-circle" animated="true"
+                       placeholder="Search offers..." [debounce]="1000"
+                       (ionInput)="onSearchChange($event)"></ion-searchbar>
         <ion-buttons slot="primary">
             <ion-button [routerLink]="['/places', 'tabs', 'offers', 'new']">
                 <ion-icon name="add-outline" slot="icon-only"></ion-icon>
@@ -20,7 +22,7 @@
                     <ion-spinner color="primary"></ion-spinner>
                 } @else {
                     <ion-list>
-                        @for (offer of offers ; track offer.id) {
+                        @for (offer of presentedOffers ; track offer.id) {
                             <app-offer-item
                                     [place]="offer"
                                     [offerDetailPath]="['/', 'places', 'tabs', 'offers', offer.id]"

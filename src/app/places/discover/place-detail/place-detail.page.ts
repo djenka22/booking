@@ -87,7 +87,7 @@ export class PlaceDetailPage implements OnInit {
             {
                 next: async place => {
                     this.place = place;
-                    this.isBookable = place.userId !== this.authService.userId;
+                    this.isBookable = place.user.id !== this.authService.userId;
                     await this.bookingService.findBookingByPlaceIdAndUserId(this.place.id, this.authService.userId).then((booking) => {
                         if (booking) {
                             this._existingBooking = booking;

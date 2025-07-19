@@ -10,7 +10,9 @@ import {
     deleteDoc,
     doc,
     docData,
+    DocumentReference,
     Firestore,
+    limit,
     query,
     updateDoc,
     where,
@@ -18,6 +20,7 @@ import {
 import {Timestamp} from "firebase/firestore";
 import {StorageReference} from "@firebase/storage";
 import {deleteObject, getDownloadURL, ref, Storage, uploadBytes} from "@angular/fire/storage";
+import {User} from "../auth/user.model";
 
 @Injectable({
     providedIn: 'root'
@@ -26,6 +29,7 @@ export class PlacesService {
 
     private _places = new BehaviorSubject<Place[]>([]);
     private _offers = new BehaviorSubject<Place[]>([]);
+    private placesCollection = collection(this.firestore, 'places');
 
     constructor(private authService: AuthService,
                 private firestore: Firestore,
@@ -41,7 +45,7 @@ export class PlacesService {
     }
 
     fetchPlaces() {
-        const placesRef = collection(this.firestore, 'places');
+        const placesRef = this.placesCollection;
         const placesObservable = collectionData(placesRef, {idField: 'id'}) as Observable<Place[]>;
         return placesObservable.pipe(
             tap(
@@ -53,8 +57,9 @@ export class PlacesService {
     }
 
     getOffersByUserId(userId: string) {
-        const placesRef = collection(this.firestore, 'places');
-        const q = query(placesRef, where("userId", "==", userId));
+        const placesRef = this.placesCollection;
+        const userDocRef = doc(this.firestore, 'users', userId) as DocumentReference<User>;
+        const q = query(placesRef, where("user", "==", userDocRef));
         const observable = collectionData(q, {idField: 'id'}) as Observable<Place[]>;
         return observable.pipe(
             tap(places => {
@@ -79,6 +84,8 @@ export class PlacesService {
     }
 
     addPlace(title: string, description: string, price: number, dateFrom: Date, dateTo: Date) {
+        const searchKeywords = this.generateSearchKeywords(title);
+        const userDocRef = doc(this.firestore, 'users', this.authService.userId) as DocumentReference<User>;
         const newPlace: NewPlace = {
             title,
             description,
@@ -87,10 +94,11 @@ export class PlacesService {
             featured: false,
             availableFrom: dateFrom,
             availableTo: dateTo,
-            userId: this.authService.userId
+            user: userDocRef,
+            searchKeywords
         };
 
-        return addDoc(collection(this.firestore, 'places'), newPlace);
+        return addDoc(this.placesCollection, newPlace);
     }
 
     update(placeId: string, title: string, description: string, price: number, availableFrom: Date, availableTo: Date) {
@@ -164,5 +172,80 @@ export class PlacesService {
             console.error('Error deleting file:', error);
             throw error;
         }
+    }
+
+    searchPlaces(searchTerm: string): Observable<Place[]> {
+        if (!searchTerm || searchTerm.trim() === '') {
+            return new Observable(observer => observer.next([])); // Return empty if no search term
+        }
+
+        const lowerCaseSearchTerm = searchTerm.toLowerCase();
+
+        // Option 2: `array-contains-any` (finds documents that contain ANY of the individual words in the search term)
+        // This is generally more useful for multi-word searches.
+        const searchTermsArray = lowerCaseSearchTerm.split(/\s+/).filter(term => term.length > 0);
+
+        if (searchTermsArray.length === 0) {
+            return new Observable(observer => observer.next([]));
+        }
+
+        // Firestore's `array-contains-any` can take up to 10 distinct values.
+        // If your user types more than 10 words, you'll need to truncate or refine this.
+        const q = query(
+            this.placesCollection,
+            where('searchKeywords', 'array-contains-any', searchTermsArray.slice(0, 10)), // Limit to first 10 words
+            limit(20)
+        );
+
+        const placeObservable = collectionData(q, { idField: 'id' }).pipe() as Observable<Place[]>;
+        return placeObservable.pipe(take(1));
+    }
+
+    searchOffers(searchTerm: string): Observable<Place[]> {
+        if (!searchTerm || searchTerm.trim() === '') {
+            return new Observable(observer => observer.next([])); // Return empty if no search term
+        }
+
+        const lowerCaseSearchTerm = searchTerm.toLowerCase();
+
+        // Option 2: `array-contains-any` (finds documents that contain ANY of the individual words in the search term)
+        // This is generally more useful for multi-word searches.
+        const searchTermsArray = lowerCaseSearchTerm.split(/\s+/).filter(term => term.length > 0);
+
+        if (searchTermsArray.length === 0) {
+            return new Observable(observer => observer.next([]));
+        }
+
+
+        const userDocRef = doc(this.firestore, 'users', this.authService.userId);
+
+        // Firestore's `array-contains-any` can take up to 10 distinct values.
+        // If your user types more than 10 words, you'll need to truncate or refine this.
+        const q = query(
+            this.placesCollection,
+            where('user', '==', userDocRef),
+            where('searchKeywords', 'array-contains-any', searchTermsArray.slice(0, 10)), // Limit to first 10 words
+            limit(20)
+        );
+
+        const placeObservable = collectionData(q, { idField: 'id' }).pipe() as Observable<Place[]>;
+        return placeObservable.pipe(take(1));
+    }
+
+    // Function to generate search keywords
+    private generateSearchKeywords(title: string): string[] {
+        const keywords: Set<string> = new Set();
+
+        // Split title and description into words, convert to lowercase, and add to set
+        title.toLowerCase().split(/\s+/).forEach(word => {
+            if (word.length > 0) {
+                keywords.add(word);
+                for (let i = 1; i <= word.length; i++) {
+                    keywords.add(word.substring(0, i));
+                }
+            }
+        });
+
+        return Array.from(keywords);
     }
 }

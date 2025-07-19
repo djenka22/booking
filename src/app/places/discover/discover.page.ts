@@ -9,10 +9,8 @@ import {
     IonHeader,
     IonMenuButton,
     IonRow,
-    IonSegment,
-    IonSegmentButton,
+    IonSearchbar,
     IonSpinner,
-    IonTitle,
     IonToolbar
 } from '@ionic/angular/standalone';
 import {PlacesService} from "../places.service";
@@ -21,29 +19,31 @@ import {FeaturedPlacesFilterPipe} from "../pipes/FeaturedPlacesFilterPipe";
 import {FeaturedPlaceComponent} from "../shared/featured-place/featured-place.component";
 import {CommonPlaceComponent} from "../shared/common-place/common-place.component";
 import {CdkFixedSizeVirtualScroll, CdkVirtualForOf, CdkVirtualScrollViewport} from "@angular/cdk/scrolling";
-import {SegmentChangeEventDetail, SegmentValue} from "@ionic/angular";
 import {Subscription} from "rxjs";
 import {AuthService} from "../../auth/auth.service";
+import {addIcons} from "ionicons";
+import {searchCircle} from "ionicons/icons";
 
 @Component({
     selector: 'app-discover',
     templateUrl: './discover.page.html',
     styleUrls: ['./discover.page.scss'],
     standalone: true,
-    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonGrid, IonRow, IonCol, FeaturedPlacesFilterPipe, IonButtons, FeaturedPlaceComponent, IonMenuButton, CommonPlaceComponent, CdkVirtualScrollViewport, CdkFixedSizeVirtualScroll, CdkVirtualForOf, IonSegment, IonSegmentButton, IonSpinner]
+    imports: [IonContent, IonHeader, IonToolbar, CommonModule, FormsModule, IonGrid, IonRow, IonCol, FeaturedPlacesFilterPipe, IonButtons, FeaturedPlaceComponent, IonMenuButton, CommonPlaceComponent, CdkVirtualScrollViewport, CdkFixedSizeVirtualScroll, CdkVirtualForOf, IonSpinner, IonSearchbar]
 })
 export class DiscoverPage implements OnInit, OnDestroy {
 
-    @ViewChild('ionSegment') ionSegment!: IonSegment;
+    @ViewChild('searchbar') ionSearchbar!: IonSearchbar;
     loadedPlaces!: Place[];
     placesSubscription!: Subscription
     placesSubscriptionFetch!: Subscription
     presentedPlaces!: Place[];
     fetchLoading: boolean = false;
-    activeFilter = 'bookable';
+    hasFeaturedPlaces: boolean = false;
 
     constructor(private placesService: PlacesService,
                 private authService: AuthService) {
+        addIcons({ searchCircle });
     }
 
     ngOnDestroy(): void {
@@ -60,31 +60,37 @@ export class DiscoverPage implements OnInit, OnDestroy {
         this.placesSubscription = this.placesService.places.subscribe(
             places => {
                 this.loadedPlaces = places;
-                this.setFilteredPlaces(this.activeFilter);
+                this.presentedPlaces = this.loadedPlaces
+                this.hasFeaturedPlaces = this.presentedPlaces.some(place => place.featured);
             }
         );
     }
 
     ionViewWillEnter() {
+        this.ionSearchbar.value = '';
         this.fetchLoading = true;
         this.placesSubscriptionFetch = this.placesService.fetchPlaces().subscribe(
             () => this.fetchLoading = false
         );
     }
 
-    onFilterUpdate($event: CustomEvent<SegmentChangeEventDetail>) {
-        this.setFilteredPlaces($event.detail.value);
+    onClearSearch() {
+        this.presentedPlaces = this.loadedPlaces;
+        this.hasFeaturedPlaces = this.presentedPlaces.some(place => place.featured);
     }
 
-    setFilteredPlaces(filterValue: SegmentValue | undefined) {
-        this.activeFilter = filterValue as string;
-        if (this.activeFilter === 'all') {
-            this.presentedPlaces = this.loadedPlaces;
-        } else {
-            this.presentedPlaces = this.loadedPlaces.filter(place => {
-                return place.userId !== this.authService.userId;
-            });
+    onSearchChange(event: any) {
+        const keywords: string = event.target.value;
+        if (!keywords || keywords.trim() === '') {
+            this.onClearSearch();
+            return;
         }
-    }
 
+        this.placesService.searchPlaces(keywords)
+            .pipe()
+            .subscribe((places: Place[]) => {
+                this.presentedPlaces = places;
+                this.hasFeaturedPlaces = this.presentedPlaces.some(place => place.featured);
+            })
+    }
 }

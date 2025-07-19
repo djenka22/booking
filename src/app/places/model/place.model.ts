@@ -1,4 +1,6 @@
 import {Timestamp} from 'firebase/firestore'
+import {DocumentReference} from "@angular/fire/firestore";
+import {User} from "../../auth/user.model";
 
 export interface Place {
 
@@ -10,5 +12,6 @@ export interface Place {
     featured: boolean
     availableFrom: Timestamp;
     availableTo: Timestamp;
-    userId: string
+    user: DocumentReference<User>,
+    searchKeywords: string[];
 }

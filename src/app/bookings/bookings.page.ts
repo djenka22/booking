@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {
@@ -19,14 +19,14 @@ import {
     IonMenuButton,
     IonModal,
     IonRow,
+    IonSearchbar,
     IonSpinner,
-    IonTitle,
     IonToolbar
 } from '@ionic/angular/standalone';
 import {BookingService} from "./booking.service";
 import {Booking, CreateBookingDto} from "./booking.model";
 import {addIcons} from "ionicons";
-import {createOutline, trashOutline} from "ionicons/icons";
+import {createOutline, searchCircle, trashOutline} from "ionicons/icons";
 import {Subscription} from "rxjs";
 import {CreateBookingComponent} from "./create-booking/create-booking.component";
 
@@ -35,11 +35,14 @@ import {CreateBookingComponent} from "./create-booking/create-booking.component"
     templateUrl: './bookings.page.html',
     styleUrls: ['./bookings.page.scss'],
     standalone: true,
-    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonButtons, IonMenuButton, IonList, IonGrid, IonItemSliding, IonItem, IonItemOptions, IonItemOption, IonLabel, IonRow, IonCol, IonIcon, IonLoading, IonSpinner, CreateBookingComponent, IonModal]
+    imports: [IonContent, IonHeader, IonToolbar, CommonModule, FormsModule, IonButtons, IonMenuButton, IonList, IonGrid, IonItemSliding, IonItem, IonItemOptions, IonItemOption, IonLabel, IonRow, IonCol, IonIcon, IonLoading, IonSpinner, CreateBookingComponent, IonModal, IonSearchbar]
 })
 export class BookingsPage implements OnInit, OnDestroy {
 
+    @ViewChild('searchbar') ionSearchbar!: IonSearchbar;
+
     loadedBookings!: Booking[];
+    presentedBookings!: Booking[];
     bookingsSubscription!: Subscription;
     bookingsSubscriptionFetch!: Subscription;
     _loadingCancel: boolean = false;
@@ -51,8 +54,9 @@ export class BookingsPage implements OnInit, OnDestroy {
 
     constructor(private bookingsService: BookingService,
                 private alertController: AlertController) {
-        addIcons({trashOutline})
-        addIcons({createOutline})
+        addIcons({trashOutline});
+        addIcons({createOutline});
+        addIcons({ searchCircle });
     }
 
     ngOnDestroy(): void {
@@ -68,6 +72,7 @@ export class BookingsPage implements OnInit, OnDestroy {
         console.log('BookingsPage ngOnInit');
         this.bookingsSubscription = this.bookingsService.bookings.subscribe(bookings => {
             this.loadedBookings = bookings;
+            this.presentedBookings = this.loadedBookings;
         });
     }
 
@@ -76,11 +81,11 @@ export class BookingsPage implements OnInit, OnDestroy {
     }
 
     ionViewWillEnter() {
-        console.log('BookingsPage ionViewWillEnter');
+        this.ionSearchbar.value = '';
+
         this.fetchLoading = true;
         this.bookingsSubscriptionFetch = this.bookingsService.fetchBookings().subscribe(
             () => {
-                console.log('Bookings fetched successfully', this.loadedBookings);
                 this.fetchLoading = false;
             }
         );
@@ -137,6 +142,24 @@ export class BookingsPage implements OnInit, OnDestroy {
         this.selectedBBookingForUpdate = this.loadedBookings.find(booking => booking.id === id)!;
         this._bookModalOpen = true;
         slidingItem.close();
+    }
+
+    onClearSearch() {
+        this.presentedBookings = this.loadedBookings;
+    }
+
+    onSearchChange(event: any) {
+        const keywords: string = event.target.value;
+        if (!keywords || keywords.trim() === '') {
+            this.onClearSearch();
+            return;
+        }
+
+        this.bookingsService.searchBookings(keywords)
+            .pipe()
+            .subscribe((bookings: Booking[]) => {
+                this.presentedBookings = bookings;
+            })
     }
 
     private presentBookingEditedAlert() {

@@ -1,11 +1,14 @@
 <div class="ion-page" #page>
 
     <ion-header>
-        <ion-toolbar>
+        <ion-toolbar class="ion-padding-end">
             <ion-buttons slot="start">
                 <ion-menu-button menu="main-menu"></ion-menu-button>
             </ion-buttons>
-            <ion-title>Your Bookings</ion-title>
+                <ion-searchbar #searchbar (ionClear)="onClearSearch()" search-icon="search-circle" animated="true"
+                                placeholder="Search bookings..." [debounce]="1000"
+                               (ionInput)="onSearchChange($event)"></ion-searchbar>
+
         </ion-toolbar>
     </ion-header>
 
@@ -20,7 +23,7 @@
                 } @else {
                     <ion-col size-md="6" offset-md="3">
                         <ion-list>
-                            @for (booking of loadedBookings; track booking.id) {
+                            @for (booking of presentedBookings; track booking.id) {
                                 <ion-item-sliding #slidingItem>
                                     <ion-item>
                                         <ion-label>
