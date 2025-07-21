@@ -1,8 +1,11 @@
 export const environment = {
   production: true
 };
+
+export const apiKey: string = 'AIzaSyBknFNa3T1dEgToNFAIaUphEHP7nZy-ldA';
+
 export const firebaseConfig = {
-  apiKey: "AIzaSyBknFNa3T1dEgToNFAIaUphEHP7nZy-ldA",
+  apiKey: apiKey,
   authDomain: "booking-91a05.firebaseapp.com",
   projectId: "booking-91a05",
   storageBucket: "booking-91a05.firebasestorage.app",

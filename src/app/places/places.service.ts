@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {AuthService} from "../auth/auth.service";
-import {BehaviorSubject, lastValueFrom, map, Observable, of, take, tap} from "rxjs";
+import {BehaviorSubject, lastValueFrom, map, Observable, of, switchMap, take, tap} from "rxjs";
 import {Place} from "./model/place.model";
 import {NewPlace} from "./model/new-place.model";
 import {
@@ -83,9 +83,15 @@ export class PlacesService {
         );
     }
 
-    addPlace(title: string, description: string, price: number, dateFrom: Date, dateTo: Date) {
+    async addPlace(title: string, description: string, price: number, dateFrom: Date, dateTo: Date) {
+
+        const userId = await lastValueFrom(this.authService.userId)
+        if (!userId) {
+            return Promise.reject(new Error('User is not authenticated'));
+        }
+
         const searchKeywords = this.generateSearchKeywords(title);
-        const userDocRef = doc(this.firestore, 'users', this.authService.userId) as DocumentReference<User>;
+        const userDocRef = doc(this.firestore, 'users', userId) as DocumentReference<User>;
         const newPlace: NewPlace = {
             title,
             description,
@@ -197,7 +203,7 @@ export class PlacesService {
             limit(20)
         );
 
-        const placeObservable = collectionData(q, { idField: 'id' }).pipe() as Observable<Place[]>;
+        const placeObservable = collectionData(q, {idField: 'id'}).pipe() as Observable<Place[]>;
         return placeObservable.pipe(take(1));
     }
 
@@ -216,20 +222,28 @@ export class PlacesService {
             return new Observable(observer => observer.next([]));
         }
 
+        return this.authService.userId.pipe(
+            take(1),
+            switchMap(userId => {
+                if (!userId) {
+                    return of([]);
+                }
 
-        const userDocRef = doc(this.firestore, 'users', this.authService.userId);
+                const userDocRef = doc(this.firestore, 'users', userId);
 
-        // Firestore's `array-contains-any` can take up to 10 distinct values.
-        // If your user types more than 10 words, you'll need to truncate or refine this.
-        const q = query(
-            this.placesCollection,
-            where('user', '==', userDocRef),
-            where('searchKeywords', 'array-contains-any', searchTermsArray.slice(0, 10)), // Limit to first 10 words
-            limit(20)
-        );
+                // Firestore's `array-contains-any` can take up to 10 distinct values.
+                // If your user types more than 10 words, you'll need to truncate or refine this.
+                const q = query(
+                    this.placesCollection,
+                    where('user', '==', userDocRef),
+                    where('searchKeywords', 'array-contains-any', searchTermsArray.slice(0, 10)), // Limit to first 10 words
+                    limit(20)
+                );
 
-        const placeObservable = collectionData(q, { idField: 'id' }).pipe() as Observable<Place[]>;
-        return placeObservable.pipe(take(1));
+                const placeObservable = collectionData(q, {idField: 'id'}).pipe() as Observable<Place[]>;
+                return placeObservable.pipe(take(1));
+            })
+        )
     }
 
     // Function to generate search keywords

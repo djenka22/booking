@@ -59,13 +59,13 @@
                 <ion-row>
                     <ion-col size-sm="3" offset-sm="3">
                         <ion-item mode="ios">
-                            <ion-label style="font-size: 15px" position="stacked">Available from</ion-label>
+                            <ion-label style="font-size: 15px" position="stacked">Book from</ion-label>
                             <ion-datetime-button style="padding-bottom: 2px; padding-top: 14px"
-                                                 datetime="availableFrom"></ion-datetime-button>
+                                                 datetime="bookFrom"></ion-datetime-button>
                             <ion-popover [keepContentsMounted]="true">
                                 <ng-template>
                                     <ion-datetime
-                                            id="availableFrom"
+                                            id="bookFrom"
                                             presentation="date"
                                             [min]="place().availableFrom.toDate().toISOString()"
                                             [max]="place().availableTo.toDate().toISOString()"
@@ -82,13 +82,13 @@
                 <ion-row>
                     <ion-col size-sm="3">
                         <ion-item mode="ios">
-                            <ion-label style="font-size: 15px" position="stacked">Available to</ion-label>
+                            <ion-label style="font-size: 15px" position="stacked">Book to</ion-label>
                             <ion-datetime-button style="padding-bottom: 2px; padding-top: 14px"
-                                                 datetime="availableTo"></ion-datetime-button>
+                                                 datetime="bookTo"></ion-datetime-button>
                             <ion-popover [keepContentsMounted]="true">
                                 <ng-template>
                                     <ion-datetime
-                                            id="availableTo"
+                                            id="bookTo"
                                             presentation="date"
                                             [min]="dateFrom"
                                             [max]="place().availableTo.toDate().toISOString()"

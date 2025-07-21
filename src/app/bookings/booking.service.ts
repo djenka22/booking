@@ -40,49 +40,62 @@ export class BookingService {
 
     fetchBookings() {
 
-        const bookingsRef = this.bookingsCollection;
-        const userDocRef = doc(this.firestore, 'users', this.authService.userId);
-        const q = query(bookingsRef, where("user", "==", userDocRef));
+        return this.authService.userId.pipe(
+            take(1),
+            switchMap(userId => {
+                if (!userId) {
+                    return of([]);
+                }
+                const bookingsRef = this.bookingsCollection;
+                const userDocRef = doc(this.firestore, 'users', userId);
+                const q = query(bookingsRef, where("user", "==", userDocRef));
 
-        const bookingsObservable = collectionData(q, {idField: 'id'}) as Observable<Booking[]>;
+                const bookingsObservable = collectionData(q, {idField: 'id'}) as Observable<Booking[]>;
 
-        return bookingsObservable.pipe(
-            switchMap(
-                bookings => {
-                    if (bookings.length === 0) {
-                        return of([]);
-                    }
-                    const bookingsWithPlaceObservables = bookings.map(
-                        booking => {
-                            const placeObservable = this.placesService.getPlaceById(booking.place.id);
-                            return placeObservable.pipe(
-                                take(1),
-                                map(place => {
-                                    return {...booking, fetchedPlace: place} as Booking;
-                                })
-                            );
+                return bookingsObservable.pipe(
+                    switchMap(
+                        bookings => {
+                            if (bookings.length === 0) {
+                                return of([]);
+                            }
+                            const bookingsWithPlaceObservables = bookings.map(
+                                booking => {
+                                    const placeObservable = this.placesService.getPlaceById(booking.place.id);
+                                    return placeObservable.pipe(
+                                        take(1),
+                                        map(place => {
+                                            return {...booking, fetchedPlace: place} as Booking;
+                                        })
+                                    );
+                                }
+                            )
+                            return forkJoin(bookingsWithPlaceObservables);
+                        }),
+                    tap(
+                        bookingsWithFetchedPlaces => {
+                            this._bookings.next(bookingsWithFetchedPlaces);
                         }
                     )
-                    return forkJoin(bookingsWithPlaceObservables);
-                }),
-            tap(
-                bookingsWithFetchedPlaces => {
-                    this._bookings.next(bookingsWithFetchedPlaces);
-                }
-            )
-        );
+                );
+            })
+        )
+
     }
 
     async addBooking(placeId: string, guestNumber: number, dateFrom: Date, dateTo: Date) {
-        const place = await lastValueFrom(this.placesService.getPlaceById(placeId));
+        const userId = await lastValueFrom(this.authService.userId);
+        if (!userId) {
+            return Promise.reject(new Error('User is not authenticated'));
+        }
 
+        const place = await lastValueFrom(this.placesService.getPlaceById(placeId));
         if (!place) {
             return Promise.reject(new Error('Place with ID ${placeId} not found'));
         }
 
         const booking = new NewBooking(
             doc(this.firestore, 'places', placeId) as DocumentReference<Place>,
-            doc(this.firestore, 'users', this.authService.userId) as DocumentReference<User>,
+            doc(this.firestore, 'users', userId) as DocumentReference<User>,
             guestNumber,
             Timestamp.fromDate(dateFrom),
             Timestamp.fromDate(dateTo)
@@ -106,7 +119,6 @@ export class BookingService {
     }
 
     async findBookingByPlaceIdAndUserId(placeId: string, userId: string) {
-        console.log('Place Detail Page: ', placeId, userId);
 
         const bookingsCollection = this.bookingsCollection;
         const userRef = doc(this.firestore, 'users', userId);
@@ -154,46 +166,56 @@ export class BookingService {
             return new Observable(observer => observer.next([]));
         }
 
-        return this.placesService.searchPlaces(searchTerm).pipe(
+        return this.authService.userId.pipe(
             take(1),
-            switchMap(places => {
-                if (places.length === 0) {
-                    return of([]); // No places found
-                }
+            switchMap(userId => {
+                    if (!userId) {
+                        return of([]);
+                    }
 
-                const placeRefs = places.map(place => {
-                    return doc(this.firestore, 'places', place.id) as DocumentReference<Place>;
-                });
-                const userRef = doc(this.firestore, 'users', this.authService.userId);
-
-                const q = query(
-                    this.bookingsCollection,
-                    where('place', 'in', placeRefs),
-                    where('user', '==', userRef),
-                    limit(1)
-                );
-
-                const bookingObservable = collectionData(q, {idField: 'id'}) as Observable<Booking[]>;
-                return bookingObservable.pipe(
-                    take(1),
-                    switchMap(bookings => {
-                        if (bookings.length === 0) {
-                            return of([]); // No bookings found
-                        }
-
-                        const bookingsWithPlaceObservables = bookings.map(
-                            booking => {
-                                const placeObservable = this.placesService.getPlaceById(booking.place.id);
-                                return placeObservable.pipe(
-                                    take(1),
-                                    map(place => {
-                                        return {...booking, fetchedPlace: place} as Booking;
-                                    })
-                                );
+                    return this.placesService.searchPlaces(searchTerm).pipe(
+                        take(1),
+                        switchMap(places => {
+                            if (places.length === 0) {
+                                return of([]); // No places found
                             }
-                        );
-                        return forkJoin(bookingsWithPlaceObservables);
-                    }));
-            }))
+
+                            const placeRefs = places.map(place => {
+                                return doc(this.firestore, 'places', place.id) as DocumentReference<Place>;
+                            });
+                            const userRef = doc(this.firestore, 'users', userId);
+
+                            const q = query(
+                                this.bookingsCollection,
+                                where('place', 'in', placeRefs),
+                                where('user', '==', userRef),
+                                limit(1)
+                            );
+
+                            const bookingObservable = collectionData(q, {idField: 'id'}) as Observable<Booking[]>;
+                            return bookingObservable.pipe(
+                                take(1),
+                                switchMap(bookings => {
+                                    if (bookings.length === 0) {
+                                        return of([]); // No bookings found
+                                    }
+
+                                    const bookingsWithPlaceObservables = bookings.map(
+                                        booking => {
+                                            const placeObservable = this.placesService.getPlaceById(booking.place.id);
+                                            return placeObservable.pipe(
+                                                take(1),
+                                                map(place => {
+                                                    return {...booking, fetchedPlace: place} as Booking;
+                                                })
+                                            );
+                                        }
+                                    );
+                                    return forkJoin(bookingsWithPlaceObservables);
+                                }));
+                        }))
+                }
+            )
+        );
     }
 }

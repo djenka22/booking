@@ -23,7 +23,7 @@ import {Place} from "../model/place.model";
 import {addIcons} from "ionicons";
 import {addOutline, searchCircle} from "ionicons/icons";
 import {RouterLink} from "@angular/router";
-import {Subscription} from "rxjs";
+import {Subscription, switchMap, take} from "rxjs";
 import {AuthService} from "../../auth/auth.service";
 
 @Component({
@@ -57,13 +57,24 @@ export class OffersPage implements OnInit, OnDestroy {
     ngOnInit() {
         console.log('OffersPage ngOnInit');
         this.loading = true;
-        this.placesSubscription = this.placesService.getOffersByUserId(this.authService.userId).subscribe(
+
+
+        this.placesSubscription = this.authService.userId.pipe(
+            take(1),
+            switchMap(userId => {
+                if (!userId) {
+                    this.loading = false;
+                    throw new Error('User not authenticated');
+                }
+                return this.placesService.getOffersByUserId(userId);
+            })
+        ).subscribe(
             places => {
                 this.loadedOffers = places;
                 this.presentedOffers = this.loadedOffers;
                 this.loading = false;
             }
-        )
+        );
     }
 
     ionViewWillEnter() {

@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {
     IonApp,
     IonContent,
@@ -21,13 +21,18 @@ import {RouterLink} from "@angular/router";
 import {AuthService} from "./auth/auth.service";
 import {Capacitor} from "@capacitor/core";
 import {SplashScreen} from "@capacitor/splash-screen";
+import {Subscription} from "rxjs";
 
 @Component({
     selector: 'app-root',
     templateUrl: 'app.component.html',
     imports: [IonApp, IonRouterOutlet, IonMenu, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonIcon, IonLabel, RouterLink, IonMenuToggle],
 })
-export class AppComponent {
+export class AppComponent implements OnInit, OnDestroy {
+
+    authSubscription!: Subscription;
+    private _previousAuthState = false;
+
     constructor(private authService: AuthService,
                 private navController: NavController,
                 private platform: Platform) {
@@ -35,6 +40,23 @@ export class AppComponent {
         addIcons({checkboxOutline})
         addIcons({exitOutline})
         this.initializeApp();
+    }
+
+    ngOnDestroy(): void {
+        if (this.authSubscription) {
+            this.authSubscription.unsubscribe();
+        }
+    }
+
+    ngOnInit(): void {
+        console.log('AppComponent ngOnInit');
+        this.authSubscription = this.authService.isAuthenticated.subscribe(
+            isAuth => {
+                if (!isAuth && this._previousAuthState !== isAuth) {
+                    this.navController.navigateRoot('/auth');
+                }
+                this._previousAuthState = isAuth;
+            });
     }
 
     initializeApp() {

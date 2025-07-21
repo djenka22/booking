@@ -62,7 +62,7 @@ export class CreateBookingComponent implements OnInit {
     existingBooking = input.required<Booking>();
     isModalClosed = output<CreateBookingDto>();
     dateFrom!: string;
-    dateTo!: string ;
+    dateTo!: string;
     loggedInUser!: User;
     fetchLoading: boolean = false;
     guestNumber: string = '2'
@@ -75,9 +75,12 @@ export class CreateBookingComponent implements OnInit {
 
     ngOnInit() {
         this.fetchLoading = true;
-        this.authService.getLoggedInUser().subscribe(user => {
-                this.loggedInUser = user;
-                this.fetchLoading = false;
+        this.authService.user.subscribe(user => {
+            if (!user) {
+                throw new Error('User not found');
+            }
+            this.loggedInUser = user;
+            this.fetchLoading = false;
         });
         console.log('CreateBookingComponent ngOnInit');
 
@@ -106,29 +109,23 @@ export class CreateBookingComponent implements OnInit {
         }
 
         if (this.existingBooking()) {
-            console.log('Existing booking found', this.existingBooking());
-            console.log('Booked from:', this.existingBooking().bookedFrom.toDate());
             this.dateFrom = this.existingBooking().bookedFrom.toDate().toISOString();
             this.dateTo = this.existingBooking().bookedTo.toDate().toISOString();
             this.guestNumber = this.existingBooking().guestNumber.toString();
-            console.log('Date From:', this.dateFrom);
-            console.log('Existing booking date from', this.existingBooking().bookedFrom.toDate().toISOString());
         }
 
     }
 
     onCancel() {
-        console.log('Cancel');
         this.isModalClosed.emit({
-            role: 'cancel'}
+                role: 'cancel'
+            }
         );
     }
 
     onDateFromChange() {
         const newDateFromObj = new Date(this.dateFrom);
         const currentToDateObj = new Date(this.dateTo);
-        console.log('Form value:', this.form.value['date-from']);
-
 
         if (newDateFromObj > currentToDateObj) {
             this.dateTo = this.dateFrom;
@@ -139,10 +136,6 @@ export class CreateBookingComponent implements OnInit {
         if (this.form.invalid) {
             return;
         }
-
-        console.log('Book Place', this.existingBooking());
-        console.log('Form Value:', this.form.value);
-        console.log('Form value date from:', this.form.value['date-from']);
 
         this.isModalClosed.emit({
             bookingData: {

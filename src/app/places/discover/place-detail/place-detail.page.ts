@@ -28,6 +28,7 @@ import {BookingService} from "../../../bookings/booking.service";
 import {Booking, CreateBookingDto} from "../../../bookings/booking.model";
 import {AuthService} from "../../../auth/auth.service";
 import {PlacesService} from "../../places.service";
+import {switchMap, take} from "rxjs";
 
 @Component({
     selector: 'app-place-detail',
@@ -83,17 +84,30 @@ export class PlaceDetailPage implements OnInit {
 
     ngOnInit() {
         this._fetchLoading = true;
-        this.activatedRouteService.findPlaceBasedOnRoute(this.activatedRoute, 'placeId').subscribe(
+        let fetchedUserId: string;
+        this.authService.userId.pipe(
+            take(1),
+            switchMap( userId => {
+                if (!userId) {
+                    this._fetchLoading = false;
+                    throw new Error('User not authenticated');
+                }
+                fetchedUserId = userId;
+
+                return this.activatedRouteService.findPlaceBasedOnRoute(this.activatedRoute, 'placeId');
+            })
+        ).subscribe(
             {
                 next: async place => {
                     this.place = place;
-                    this.isBookable = place.user.id !== this.authService.userId;
-                    await this.bookingService.findBookingByPlaceIdAndUserId(this.place.id, this.authService.userId).then((booking) => {
+                    this.isBookable = place.user.id !== fetchedUserId;
+                    await this.bookingService.findBookingByPlaceIdAndUserId(this.place.id, fetchedUserId).then((booking) => {
                         if (booking) {
                             this._existingBooking = booking;
                         }
                         this._fetchLoading = false;
                     });
+
                 },
                 error: () => {
                     this._fetchLoading = false;
@@ -110,7 +124,7 @@ export class PlaceDetailPage implements OnInit {
                         alert.present();
                     })
                 }
-            })
+            });
     }
 
     ionViewWillEnter() {
