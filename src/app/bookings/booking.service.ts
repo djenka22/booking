@@ -151,6 +151,31 @@ export class BookingService {
         return booking;
     }
 
+    findAllBookingsByPlaceId(placeId: string): Observable<Booking[]> {
+        const bookingsRef = this.bookingsCollection;
+        const placeRef = doc(this.firestore, 'places', placeId) as DocumentReference<Place>;
+
+        const q = query(bookingsRef, where('place', '==', placeRef));
+
+        return collectionData(q, {idField: 'id'}) as Observable<Booking[]>;
+    }
+
+    findAllBookingsByPlaceIdExcludeBookingId(placeId: string, bookingId: string): Observable<Booking[]> {
+        const bookingsRef = this.bookingsCollection;
+        const placeRef = doc(this.firestore, 'places', placeId) as DocumentReference<Place>;
+
+        console.log('Finding all bookings for place:', placeId, 'excluding booking ID:', bookingId);
+        // Create a query that excludes the specified booking ID
+        const q = query(
+            bookingsRef,
+            where('place', '==', placeRef),
+            where('__name__', '!=', bookingId)
+        );
+
+        return collectionData(q, {idField: 'id'}) as Observable<Booking[]>;
+    }
+
+
     searchBookings(searchTerm: string): Observable<Booking[]> {
         if (!searchTerm || searchTerm.trim() === '') {
             return new Observable(observer => observer.next([])); // Return empty if no search term

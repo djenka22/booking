@@ -26,6 +26,9 @@ import {FormsModule, NgForm, ReactiveFormsModule} from "@angular/forms";
 import {Booking, CreateBookingDto} from "../booking.model";
 import {User} from "../../auth/user.model";
 import {AuthService} from "../../auth/auth.service";
+import {BookingService} from "../booking.service";
+import {map, switchMap} from "rxjs";
+import {Timestamp} from "firebase/firestore";
 
 @Component({
     selector: 'app-create-booking',
@@ -65,9 +68,11 @@ export class CreateBookingComponent implements OnInit {
     dateTo!: string;
     loggedInUser!: User;
     fetchLoading: boolean = false;
-    guestNumber: string = '2'
+    guestNumber: string = '2';
+    disabledDatesSet: Set<string> = new Set();
 
-    constructor(private authService: AuthService) {
+    constructor(private authService: AuthService,
+                private bookingService: BookingService) {
         addIcons({closeOutline})
         addIcons({checkmarkOutline})
     }
@@ -75,13 +80,35 @@ export class CreateBookingComponent implements OnInit {
 
     ngOnInit() {
         this.fetchLoading = true;
-        this.authService.user.subscribe(user => {
-            if (!user) {
-                throw new Error('User not found');
-            }
-            this.loggedInUser = user;
-            this.fetchLoading = false;
-        });
+        this.authService.user.pipe(
+            map(user => {
+                if (!user) {
+                    throw new Error('User not found');
+                }
+                this.loggedInUser = user;
+                return user;
+            }),
+            switchMap(user => {
+                if (this.existingBooking()) {
+                    return this.bookingService.findAllBookingsByPlaceIdExcludeBookingId(this.place().id, this.existingBooking().id);
+                }
+                return this.bookingService.findAllBookingsByPlaceId(this.place().id);
+
+            }),
+            map(bookings => {
+                const allBookedDates: string[] = [];
+                bookings.forEach(booking => {
+                    const datesInBooking = this.getDatesInRange(booking.bookedFrom, booking.bookedTo);
+                    allBookedDates.push(...datesInBooking);
+                })
+                return allBookedDates;
+            })
+        ).subscribe(
+            dates => {
+                this.disabledDatesSet = new Set(dates);
+                this.fetchLoading = false;
+            },
+        );
         console.log('CreateBookingComponent ngOnInit');
 
         const availableFrom = this.place().availableFrom.toDate();
@@ -147,5 +174,34 @@ export class CreateBookingComponent implements OnInit {
             role: this.existingBooking() ? 'update' : 'confirm'
         });
 
+    }
+
+    isDateEnabled = (isoString: string) => {
+        const date = new Date(isoString);
+        const formattedDate = this.formatDateToYYYYMMDD(date);
+        return !this.disabledDatesSet.has(formattedDate);
+    };
+
+    private getDatesInRange(startDate: Timestamp, endDate: Timestamp): string[] {
+        const dates: string[] = [];
+        let currentDate = startDate.toDate(); // Convert Firebase Timestamp to JS Date
+        const end = endDate.toDate(); // Convert Firebase Timestamp to JS Date
+
+
+        while (currentDate <= end) {
+            const year = currentDate.getFullYear();
+            const month = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // Month is 0-indexed
+            const day = currentDate.getDate().toString().padStart(2, '0');
+            dates.push(`${year}-${month}-${day}`);
+            currentDate.setDate(currentDate.getDate() + 1); // Move to the next day
+        }
+        return dates;
+    }
+
+    private formatDateToYYYYMMDD(date: Date): string {
+        const year = date.getFullYear();
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
 }

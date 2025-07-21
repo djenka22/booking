@@ -62,7 +62,7 @@
                             <ion-label style="font-size: 15px" position="stacked">Book from</ion-label>
                             <ion-datetime-button style="padding-bottom: 2px; padding-top: 14px"
                                                  datetime="bookFrom"></ion-datetime-button>
-                            <ion-popover [keepContentsMounted]="true">
+                            <ion-popover [keepContentsMounted]="true" [showBackdrop]="false" [dismissOnSelect]="true">
                                 <ng-template>
                                     <ion-datetime
                                             id="bookFrom"
@@ -70,6 +70,7 @@
                                             [min]="place().availableFrom.toDate().toISOString()"
                                             [max]="place().availableTo.toDate().toISOString()"
                                             [(ngModel)]="dateFrom"
+                                            [isDateEnabled]="isDateEnabled"
                                             (ngModelChange)="onDateFromChange()"
                                             name="date-from"
                                             required="true"
@@ -85,7 +86,7 @@
                             <ion-label style="font-size: 15px" position="stacked">Book to</ion-label>
                             <ion-datetime-button style="padding-bottom: 2px; padding-top: 14px"
                                                  datetime="bookTo"></ion-datetime-button>
-                            <ion-popover [keepContentsMounted]="true">
+                            <ion-popover [keepContentsMounted]="true" [showBackdrop]="false" [dismissOnSelect]="true">
                                 <ng-template>
                                     <ion-datetime
                                             id="bookTo"
@@ -93,6 +94,7 @@
                                             [min]="dateFrom"
                                             [max]="place().availableTo.toDate().toISOString()"
                                             [(ngModel)]="dateTo"
+                                            [isDateEnabled]="isDateEnabled"
                                             required="true"
                                             name="date-to"
                                     ></ion-datetime>
