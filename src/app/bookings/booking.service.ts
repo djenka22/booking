@@ -1,6 +1,18 @@
 import {Injectable} from '@angular/core';
 import {Booking, NewBooking,} from "./booking.model";
-import {BehaviorSubject, combineLatest, forkJoin, lastValueFrom, map, Observable, of, switchMap, take, tap} from "rxjs";
+import {
+    BehaviorSubject,
+    catchError,
+    combineLatest,
+    forkJoin,
+    lastValueFrom,
+    map,
+    Observable,
+    of,
+    switchMap,
+    take,
+    tap
+} from "rxjs";
 import {AuthService} from '../auth/auth.service';
 import {PlacesService} from "../places/places.service";
 import {Place} from "../places/model/place.model";
@@ -60,16 +72,17 @@ export class BookingService {
                             }
                             const bookingsWithPlaceObservables = bookings.map(
                                 booking => {
-                                    let placeObservable;
-                                    try {
-                                        placeObservable = this.placesService.getPlaceById(booking.place.id);
-                                    } catch (error) {
-                                        console.error('Error fetching place for booking:', booking.id, error);
-                                        return of({...booking, fetchedPlace: null} as Booking);
-                                    }
+                                    const placeObservable = this.placesService.getPlaceById(booking.place.id).pipe(
+                                        take(1),
+                                        catchError((error) => {
+                                            console.error('Error fetching place:', error);
+                                            return of(null)
+                                        }),
+                                    );
                                     return placeObservable.pipe(
                                         take(1),
                                         map(place => {
+                                            console.log('Fetched place for booking:', place);
                                             return {...booking, fetchedPlace: place} as Booking;
                                         })
                                     );
@@ -78,7 +91,8 @@ export class BookingService {
                             return forkJoin(bookingsWithPlaceObservables);
                         }),
                     tap(
-                        bookingsWithFetchedPlaces => {
+                        bookings => {
+                            const bookingsWithFetchedPlaces = bookings.filter(booking => !!booking.fetchedPlace);
                             this._bookings.next(bookingsWithFetchedPlaces);
                         }
                     )

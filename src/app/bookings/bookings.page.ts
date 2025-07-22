@@ -86,6 +86,7 @@ export class BookingsPage implements OnInit, OnDestroy {
         this.fetchLoading = true;
         this.bookingsSubscriptionFetch = this.bookingsService.fetchBookings().subscribe(
             () => {
+                console.log('Bookings fetched');
                 this.fetchLoading = false;
             }
         );
