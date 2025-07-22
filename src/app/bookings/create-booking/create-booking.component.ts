@@ -149,27 +149,6 @@ export class CreateBookingComponent implements OnInit {
     }
 
     onDateFromChange() {
-        const isValid = this.validateDateRange();
-
-        if (!isValid) {
-            this.bookFromIonDatetime.cancel(true);
-            this.alertController.create({
-                header: 'Invalid Date Range',
-                subHeader: 'Please select a different date range',
-                message: 'The selected date range already has bookings in between',
-                buttons: [
-                    {
-                        text: 'Okay',
-                        role: 'destructive',
-                        handler: () => {
-                            this.dateFrom = this.firstAvailableDate.toISOString();
-                            this.dateTo = this.firstAvailableDate.toISOString();
-                        }
-                    }
-                ]
-            }).then(alert => alert.present());
-            return;
-        }
 
         const newDateFromObj = new Date(this.dateFrom);
         const currentToDateObj = new Date(this.dateTo);
@@ -177,9 +156,15 @@ export class CreateBookingComponent implements OnInit {
         if (newDateFromObj > currentToDateObj) {
             this.dateTo = this.dateFrom;
         }
+
     }
 
-    onDateToChange() {
+
+    onBookPlace() {
+        if (this.form.invalid) {
+            return;
+        }
+
         const isValid = this.validateDateRange();
 
         if (!isValid) {
@@ -193,17 +178,17 @@ export class CreateBookingComponent implements OnInit {
                         text: 'Okay',
                         role: 'destructive',
                         handler: () => {
-                            this.dateFrom = this.firstAvailableDate.toISOString();
-                            this.dateTo = this.firstAvailableDate.toISOString();
+                            if (this.existingBooking()) {
+                                this.dateFrom = this.existingBooking().bookedFrom.toDate().toISOString();
+                                this.dateTo = this.existingBooking().bookedTo.toDate().toISOString();
+                            } else {
+                                this.dateFrom = this.firstAvailableDate.toISOString();
+                                this.dateTo = this.firstAvailableDate.toISOString();
+                            }
                         }
                     }
                 ]
             }).then(alert => alert.present());
-        }
-    }
-
-    onBookPlace() {
-        if (this.form.invalid) {
             return;
         }
 

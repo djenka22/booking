@@ -124,6 +124,7 @@ export class AuthService implements OnInit {
         const userId = userCredential.user.uid;
         const userEmail = userCredential.user.email!;
 
+
         if (firstName && lastName) {
             await this.createUser(userId, userEmail, firstName, lastName);
         }

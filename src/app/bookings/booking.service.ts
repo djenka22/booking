@@ -75,14 +75,12 @@ export class BookingService {
                                     const placeObservable = this.placesService.getPlaceById(booking.place.id).pipe(
                                         take(1),
                                         catchError((error) => {
-                                            console.error('Error fetching place:', error);
                                             return of(null)
                                         }),
                                     );
                                     return placeObservable.pipe(
                                         take(1),
                                         map(place => {
-                                            console.log('Fetched place for booking:', place);
                                             return {...booking, fetchedPlace: place} as Booking;
                                         })
                                     );
