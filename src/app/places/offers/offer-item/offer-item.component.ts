@@ -30,7 +30,7 @@ export class OfferItemComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    console.log('OfferItemComponent ngOnInit', this.slidingItem);
+    console.log('OfferItemComponent ngOnInit');
   }
 
   ngAfterViewInit() {

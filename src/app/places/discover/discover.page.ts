@@ -20,7 +20,6 @@ import {FeaturedPlaceComponent} from "../shared/featured-place/featured-place.co
 import {CommonPlaceComponent} from "../shared/common-place/common-place.component";
 import {CdkFixedSizeVirtualScroll, CdkVirtualForOf, CdkVirtualScrollViewport} from "@angular/cdk/scrolling";
 import {Subscription} from "rxjs";
-import {AuthService} from "../../auth/auth.service";
 import {addIcons} from "ionicons";
 import {searchCircle} from "ionicons/icons";
 
@@ -41,8 +40,7 @@ export class DiscoverPage implements OnInit, OnDestroy {
     fetchLoading: boolean = false;
     hasFeaturedPlaces: boolean = false;
 
-    constructor(private placesService: PlacesService,
-                private authService: AuthService) {
+    constructor(private placesService: PlacesService) {
         addIcons({ searchCircle });
     }
 

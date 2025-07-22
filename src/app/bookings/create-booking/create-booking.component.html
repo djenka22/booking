@@ -67,7 +67,7 @@
                                     <ion-datetime #bookFromIonDatetime
                                             id="bookFrom"
                                             presentation="date"
-                                            [min]="this.firstAvailableDate.toISOString()"
+                                            [min]="dateFromMinConstraint"
                                             [max]="place().availableTo.toDate().toISOString()"
                                             [(ngModel)]="dateFrom"
                                             [isDateEnabled]="isDateEnabled"

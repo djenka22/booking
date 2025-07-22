@@ -28,7 +28,7 @@ import {Booking, CreateBookingDto} from "../booking.model";
 import {User} from "../../auth/user.model";
 import {AuthService} from "../../auth/auth.service";
 import {BookingService} from "../booking.service";
-import {map, switchMap} from "rxjs";
+import {map, switchMap, take} from "rxjs";
 import {Timestamp} from "firebase/firestore";
 
 @Component({
@@ -69,6 +69,7 @@ export class CreateBookingComponent implements OnInit {
     existingBooking = input.required<Booking>();
     isModalClosed = output<CreateBookingDto>();
     dateFrom!: string;
+    dateFromMinConstraint!: string;
     dateTo!: string;
     loggedInUser!: User;
     fetchLoading: boolean = false;
@@ -110,45 +111,32 @@ export class CreateBookingComponent implements OnInit {
                     allBookedDates.push(...datesInBooking);
                 })
                 return allBookedDates;
-            })
+            }),
+            take(1)
         ).subscribe(
             dates => {
                 this.disabledDatesSet = new Set(dates);
 
                 if (this.existingBooking()) {
-                    this.dateFrom = this.existingBooking().bookedFrom.toDate().toISOString();
-                    this.dateTo = this.existingBooking().bookedTo.toDate().toISOString();
-                    this.guestNumber = this.existingBooking().guestNumber.toString();
+                    this.setDataForExistingBooking();
+                    this.dateFromMinConstraint = new Date().toISOString();
+                    this.fetchLoading = false;
+                    return;
                 }
 
-                if (!this.dateFrom && !this.dateTo) {
-                    const firstAvailableDate = this.findFirstAvailableDate(this.place().availableFrom.toDate(), this.place().availableTo.toDate(), this.disabledDatesSet);
-                    if (!firstAvailableDate) {
-                        this.fetchLoading = false;
-
-                        this.alertController.create({
-                            header: `No available dates at ${this.place().title}`,
-                            message: 'There are no available dates for this place.',
-                            buttons: [
-                                {
-                                    text: 'Okay',
-                                    role: 'destructive',
-                                    handler: () => {
-                                        this.isModalClosed.emit({
-                                            role: 'cancel'
-                                        });
-                                    }
-                                }
-                            ]
-                        }).then(alert => alert.present());
-                    } else {
-                        this.firstAvailableDate = firstAvailableDate;
-                        this.dateFrom = this.firstAvailableDate.toISOString();
-                        this.dateTo = this.firstAvailableDate.toISOString();
-                    }
+                const firstAvailableDate = this.findFirstAvailableDate(this.place().availableFrom.toDate(), this.place().availableTo.toDate(), this.disabledDatesSet);
+                if (!firstAvailableDate) {
+                    this.presentAlertForNoAvailableDates();
+                    return;
                 }
 
+                this.firstAvailableDate = firstAvailableDate;
+                this.dateFromMinConstraint = this.firstAvailableDate.toISOString();
+                this.dateFrom = this.firstAvailableDate.toISOString();
+                this.dateTo = this.firstAvailableDate.toISOString();
                 this.fetchLoading = false;
+
+
             },
         );
     }
@@ -161,7 +149,6 @@ export class CreateBookingComponent implements OnInit {
     }
 
     onDateFromChange() {
-
         const isValid = this.validateDateRange();
 
         if (!isValid) {
@@ -298,5 +285,30 @@ export class CreateBookingComponent implements OnInit {
             }
         }
         return isValid;
+    }
+
+    private setDataForExistingBooking() {
+        this.dateFrom = this.existingBooking().bookedFrom.toDate().toISOString();
+        this.dateTo = this.existingBooking().bookedTo.toDate().toISOString();
+        this.guestNumber = this.existingBooking().guestNumber.toString();
+    }
+
+    presentAlertForNoAvailableDates() {
+        this.alertController.create({
+            header: `No available dates at ${this.place().title}`,
+            message: 'There are no available dates for this place.',
+            buttons: [
+                {
+                    text: 'Okay',
+                    role: 'destructive',
+                    handler: () => {
+                        this.fetchLoading = false;
+                        this.isModalClosed.emit({
+                            role: 'cancel'
+                        });
+                    }
+                }
+            ]
+        }).then(alert => alert.present());
     }
 }

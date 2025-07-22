@@ -17,9 +17,10 @@ import {
     IonTitle,
     IonToolbar
 } from '@ionic/angular/standalone';
-import {AuthResponseData, AuthService} from "./auth.service";
+import {AuthService} from "./auth.service";
 import {Router} from "@angular/router";
 import {Observable, take} from "rxjs";
+import {UserCredential} from "@angular/fire/auth";
 
 @Component({
     selector: 'app-auth',
@@ -34,7 +35,7 @@ export class AuthPage implements OnInit {
 
     loading: boolean = false;
     authForm!: FormGroup;
-    isLogin: boolean = true;
+    isLogin!: boolean;
 
     constructor(private authService: AuthService,
                 private router: Router,
@@ -43,6 +44,8 @@ export class AuthPage implements OnInit {
     }
 
     ngOnInit() {
+        console.log('AuthPage ngOnInit');
+        this.isLogin = true;
         this.authForm = this.formBuilder.group({
             email: ['', {
                 validators: [Validators.required, Validators.email]
@@ -73,7 +76,7 @@ export class AuthPage implements OnInit {
 
     signIn(email: string, password: string) {
         this.loading = true;
-        const authObservable = this.authService.login(email, password);
+        const authObservable = this.authService.login(email, password)
         this.authenticate(authObservable);
     }
 
@@ -83,7 +86,7 @@ export class AuthPage implements OnInit {
         this.authenticate(authObservable);
     }
 
-    authenticate(authObservable:Observable<AuthResponseData>) {
+    authenticate(authObservable:Observable<UserCredential>) {
         authObservable.subscribe(
             {
                 next: (response) => {
@@ -96,12 +99,12 @@ export class AuthPage implements OnInit {
                 error: (error) => {
                     this.loading = false;
 
-                    const failureReason = error.error.error.message;
-                    let errorMessage = 'Could not sign up. Please try again.';
-                    if (failureReason === 'EMAIL_EXISTS') {
-                        errorMessage = 'This email address already exists.';
+                    const failureReason = error.code;
+                    let errorMessage = 'Could not sign in. Please try again.';
+                    if (failureReason === 'auth/email-already-in-use') {
+                        errorMessage = 'This email address is already in use.';
                     }
-                    if (failureReason === 'INVALID_LOGIN_CREDENTIALS') {
+                    if (failureReason === 'auth/invalid-credential') {
                         errorMessage = 'Not a valid email or password.';
                     }
                     this.loadingElement.didDismiss.pipe(take(1)).subscribe(
@@ -112,42 +115,6 @@ export class AuthPage implements OnInit {
         )
     }
 
-    /*authenticate(email: string, password: string) {
-        this.loading = true;
-        let authObservable: Observable<AuthResponseData>;
-        if (this.isLogin) {
-            authObservable = this.authService.login(email, password);
-        } else {
-            authObservable = this.authService.signup(email, password);
-        }
-        authObservable.subscribe(
-            {
-                next: (response) => {
-                    this.loading = false;
-                    this.authForm.reset();
-                    this.loadingElement.didDismiss.pipe(take(1)).subscribe(
-                        () => this.openHomePage()
-                    )
-                },
-                error: (error) => {
-                    this.loading = false;
-
-                    const failureReason = error.error.error.message;
-                    let errorMessage = 'Could not sign up. Please try again.';
-                    if (failureReason === 'EMAIL_EXISTS') {
-                        errorMessage = 'This email address already exists.';
-                    }
-                    if (failureReason === 'INVALID_LOGIN_CREDENTIALS') {
-                        errorMessage = 'Not a valid email or password.';
-                    }
-                    this.loadingElement.didDismiss.pipe(take(1)).subscribe(
-                        () => this.showErrorAlert(errorMessage)
-                    )
-                }
-            }
-        )
-    }
-*/
     openHomePage() {
         this.router.navigate(['/', 'places', 'tabs', 'discover']);
     }
@@ -171,16 +138,13 @@ export class AuthPage implements OnInit {
         this.isLogin = !this.isLogin;
 
         if (this.isLogin) {
-            // If switching to Login mode, remove validators for firstName and lastName
             this.authForm.get('firstName')?.clearValidators();
             this.authForm.get('lastName')?.clearValidators();
         } else {
-            // If switching to Signup mode, add required validators for firstName and lastName
             this.authForm.get('firstName')?.setValidators([Validators.required]);
             this.authForm.get('lastName')?.setValidators([Validators.required]);
         }
 
-        // Update value and validity for the affected controls
         this.authForm.get('firstName')?.updateValueAndValidity();
         this.authForm.get('lastName')?.updateValueAndValidity();
 

@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {Booking, NewBooking,} from "./booking.model";
-import {BehaviorSubject, forkJoin, lastValueFrom, map, Observable, of, switchMap, take, tap} from "rxjs";
+import {BehaviorSubject, combineLatest, forkJoin, lastValueFrom, map, Observable, of, switchMap, take, tap} from "rxjs";
 import {AuthService} from '../auth/auth.service';
 import {PlacesService} from "../places/places.service";
 import {Place} from "../places/model/place.model";
@@ -60,7 +60,13 @@ export class BookingService {
                             }
                             const bookingsWithPlaceObservables = bookings.map(
                                 booking => {
-                                    const placeObservable = this.placesService.getPlaceById(booking.place.id);
+                                    let placeObservable;
+                                    try {
+                                        placeObservable = this.placesService.getPlaceById(booking.place.id);
+                                    } catch (error) {
+                                        console.error('Error fetching place for booking:', booking.id, error);
+                                        return of({...booking, fetchedPlace: null} as Booking);
+                                    }
                                     return placeObservable.pipe(
                                         take(1),
                                         map(place => {
@@ -175,6 +181,47 @@ export class BookingService {
         return collectionData(q, {idField: 'id'}) as Observable<Booking[]>;
     }
 
+    findAllBookingsByPlaceIdAfterDate(placeId: string, date: Date): Observable<Booking[]> {
+        const placeRef = doc(this.firestore, 'places', placeId) as DocumentReference<Place>;
+        const cutoffTimestamp = Timestamp.fromDate(date);
+
+        // --- Query 1: bookedFrom >= date ---
+        const q1 = query(
+            this.bookingsCollection,
+            where('place', '==', placeRef),
+            where('bookedFrom', '>=', cutoffTimestamp)
+        );
+        const bookings$1 = collectionData(q1, { idField: 'id' }) as Observable<Booking[]>;
+
+        // --- Query 2: bookedTo >= date ---
+        const q2 = query(
+            this.bookingsCollection,
+            where('place', '==', placeRef),
+            where('bookedTo', '>=', cutoffTimestamp)
+        );
+        const bookings$2 = collectionData(q2, { idField: 'id' }) as Observable<Booking[]>;
+
+        // --- Combine results and deduplicate ---
+        return combineLatest([bookings$1, bookings$2]).pipe(
+            take(1),
+            map(([bookingsFrom, bookingsTo]) => {
+                const uniqueBookings = new Map<string, Booking>(); // Use a Map for efficient deduplication
+
+                // Add bookings from the first query
+                bookingsFrom.forEach(booking => {
+                    uniqueBookings.set(booking.id!, booking); // Use booking.id! assuming it's always present after idField
+                });
+
+                // Add bookings from the second query (will overwrite if already present, ensuring uniqueness)
+                bookingsTo.forEach(booking => {
+                    uniqueBookings.set(booking.id!, booking);
+                });
+                // Convert the Map values back to an array
+                return Array.from(uniqueBookings.values());
+            })
+        );
+    }
+
 
     searchBookings(searchTerm: string): Observable<Booking[]> {
         if (!searchTerm || searchTerm.trim() === '') {
@@ -242,5 +289,10 @@ export class BookingService {
                 }
             )
         );
+    }
+
+    async hasPlaceFutureBookings(place: Place) {
+        const bookings = await lastValueFrom(this.findAllBookingsByPlaceIdAfterDate(place.id, new Date()));
+        return bookings.length > 0;
     }
 }
