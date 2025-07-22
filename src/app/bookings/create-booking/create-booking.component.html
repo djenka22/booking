@@ -62,12 +62,12 @@
                             <ion-label style="font-size: 15px" position="stacked">Book from</ion-label>
                             <ion-datetime-button style="padding-bottom: 2px; padding-top: 14px"
                                                  datetime="bookFrom"></ion-datetime-button>
-                            <ion-popover [keepContentsMounted]="true" [showBackdrop]="false" [dismissOnSelect]="true">
+                            <ion-popover [keepContentsMounted]="true" [showBackdrop]="false">
                                 <ng-template>
-                                    <ion-datetime
+                                    <ion-datetime #bookFromIonDatetime
                                             id="bookFrom"
                                             presentation="date"
-                                            [min]="place().availableFrom.toDate().toISOString()"
+                                            [min]="this.firstAvailableDate.toISOString()"
                                             [max]="place().availableTo.toDate().toISOString()"
                                             [(ngModel)]="dateFrom"
                                             [isDateEnabled]="isDateEnabled"
@@ -86,15 +86,16 @@
                             <ion-label style="font-size: 15px" position="stacked">Book to</ion-label>
                             <ion-datetime-button style="padding-bottom: 2px; padding-top: 14px"
                                                  datetime="bookTo"></ion-datetime-button>
-                            <ion-popover [keepContentsMounted]="true" [showBackdrop]="false" [dismissOnSelect]="true">
+                            <ion-popover [keepContentsMounted]="true" [showBackdrop]="false">
                                 <ng-template>
-                                    <ion-datetime
+                                    <ion-datetime #bookToIonDatetime
                                             id="bookTo"
                                             presentation="date"
                                             [min]="dateFrom"
                                             [max]="place().availableTo.toDate().toISOString()"
                                             [(ngModel)]="dateTo"
                                             [isDateEnabled]="isDateEnabled"
+                                            (ngModelChange)="onDateToChange()"
                                             required="true"
                                             name="date-to"
                                     ></ion-datetime>

@@ -58,11 +58,6 @@ export class PlaceDetailPage implements OnInit {
             }
         },
         {
-            text: 'Random Date',
-            handler: () => this.openBookModal('random')
-
-        },
-        {
             text: 'Cancel',
             role: 'cancel',
             data: {

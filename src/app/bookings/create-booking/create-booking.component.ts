@@ -1,5 +1,6 @@
 import {Component, input, OnInit, output, ViewChild} from '@angular/core';
 import {
+    AlertController,
     IonButton,
     IonButtons,
     IonCol,
@@ -60,6 +61,9 @@ import {Timestamp} from "firebase/firestore";
 export class CreateBookingComponent implements OnInit {
 
     @ViewChild('bookingForm') form!: NgForm;
+    @ViewChild('bookToIonDatetime') bookToIonDatetime!: IonDatetime;
+    @ViewChild('bookFromIonDatetime') bookFromIonDatetime!: IonDatetime;
+
     bookModalActionMode = input<'select' | 'random'>();
     place = input.required<Place>();
     existingBooking = input.required<Booking>();
@@ -70,15 +74,19 @@ export class CreateBookingComponent implements OnInit {
     fetchLoading: boolean = false;
     guestNumber: string = '2';
     disabledDatesSet: Set<string> = new Set();
+    firstAvailableDate!: Date;
 
     constructor(private authService: AuthService,
-                private bookingService: BookingService) {
+                private bookingService: BookingService,
+                private alertController: AlertController) {
         addIcons({closeOutline})
         addIcons({checkmarkOutline})
     }
 
 
     ngOnInit() {
+        console.log('CreateBookingComponent ngOnInit');
+
         this.fetchLoading = true;
         this.authService.user.pipe(
             map(user => {
@@ -106,41 +114,43 @@ export class CreateBookingComponent implements OnInit {
         ).subscribe(
             dates => {
                 this.disabledDatesSet = new Set(dates);
+
+                if (this.existingBooking()) {
+                    this.dateFrom = this.existingBooking().bookedFrom.toDate().toISOString();
+                    this.dateTo = this.existingBooking().bookedTo.toDate().toISOString();
+                    this.guestNumber = this.existingBooking().guestNumber.toString();
+                }
+
+                if (!this.dateFrom && !this.dateTo) {
+                    const firstAvailableDate = this.findFirstAvailableDate(this.place().availableFrom.toDate(), this.place().availableTo.toDate(), this.disabledDatesSet);
+                    if (!firstAvailableDate) {
+                        this.fetchLoading = false;
+
+                        this.alertController.create({
+                            header: `No available dates at ${this.place().title}`,
+                            message: 'There are no available dates for this place.',
+                            buttons: [
+                                {
+                                    text: 'Okay',
+                                    role: 'destructive',
+                                    handler: () => {
+                                        this.isModalClosed.emit({
+                                            role: 'cancel'
+                                        });
+                                    }
+                                }
+                            ]
+                        }).then(alert => alert.present());
+                    } else {
+                        this.firstAvailableDate = firstAvailableDate;
+                        this.dateFrom = this.firstAvailableDate.toISOString();
+                        this.dateTo = this.firstAvailableDate.toISOString();
+                    }
+                }
+
                 this.fetchLoading = false;
             },
         );
-        console.log('CreateBookingComponent ngOnInit');
-
-        const availableFrom = this.place().availableFrom.toDate();
-        const availableTo = this.place().availableTo.toDate();
-
-
-        if (this.bookModalActionMode()) {
-            if (this.bookModalActionMode() === 'random') {
-                this.dateFrom = new Date(
-                    availableFrom.getTime() +
-                    Math.random() *
-                    (availableTo.getTime() - 7 * 24 * 60 * 60 * 1000 - availableFrom.getTime())
-                ).toISOString();
-
-                this.dateTo = new Date(
-                    new Date(this.dateFrom).getTime()
-                    + Math.random() *
-                    (new Date(this.dateFrom).getTime() + 6 * 24 * 60 * 60 * 1000 - new Date(this.dateFrom).getTime())
-                ).toISOString();
-
-            } else {
-                this.dateFrom = this.place().availableFrom.toDate().toISOString(); // update set dateFrom to currentDate OR availableFrom!!!!!!!
-                this.dateTo = this.dateFrom;
-            }
-        }
-
-        if (this.existingBooking()) {
-            this.dateFrom = this.existingBooking().bookedFrom.toDate().toISOString();
-            this.dateTo = this.existingBooking().bookedTo.toDate().toISOString();
-            this.guestNumber = this.existingBooking().guestNumber.toString();
-        }
-
     }
 
     onCancel() {
@@ -151,11 +161,57 @@ export class CreateBookingComponent implements OnInit {
     }
 
     onDateFromChange() {
+
+        const isValid = this.validateDateRange();
+
+        if (!isValid) {
+            this.bookFromIonDatetime.cancel(true);
+            this.alertController.create({
+                header: 'Invalid Date Range',
+                subHeader: 'Please select a different date range',
+                message: 'The selected date range already has bookings in between',
+                buttons: [
+                    {
+                        text: 'Okay',
+                        role: 'destructive',
+                        handler: () => {
+                            this.dateFrom = this.firstAvailableDate.toISOString();
+                            this.dateTo = this.firstAvailableDate.toISOString();
+                        }
+                    }
+                ]
+            }).then(alert => alert.present());
+            return;
+        }
+
         const newDateFromObj = new Date(this.dateFrom);
         const currentToDateObj = new Date(this.dateTo);
 
         if (newDateFromObj > currentToDateObj) {
             this.dateTo = this.dateFrom;
+        }
+    }
+
+    onDateToChange() {
+        const isValid = this.validateDateRange();
+
+        if (!isValid) {
+            this.bookToIonDatetime.cancel(true);
+            this.alertController.create({
+                header: 'Invalid Date Range',
+                subHeader: 'Please select a different date range',
+                message: 'The selected date range already has bookings in between',
+                buttons: [
+                    {
+                        text: 'Okay',
+                        role: 'destructive',
+                        handler: () => {
+                            this.dateFrom = this.firstAvailableDate.toISOString();
+                            this.dateTo = this.firstAvailableDate.toISOString();
+                        }
+                    }
+                ]
+            }).then(alert => alert.present());
         }
     }
 
@@ -184,8 +240,8 @@ export class CreateBookingComponent implements OnInit {
 
     private getDatesInRange(startDate: Timestamp, endDate: Timestamp): string[] {
         const dates: string[] = [];
-        let currentDate = startDate.toDate(); // Convert Firebase Timestamp to JS Date
-        const end = endDate.toDate(); // Convert Firebase Timestamp to JS Date
+        let currentDate = startDate.toDate();
+        const end = endDate.toDate();
 
 
         while (currentDate <= end) {
@@ -203,5 +259,44 @@ export class CreateBookingComponent implements OnInit {
         const month = (date.getMonth() + 1).toString().padStart(2, '0');
         const day = date.getDate().toString().padStart(2, '0');
         return `${year}-${month}-${day}`;
+    }
+
+    private findFirstAvailableDate(
+        placeAvailableFrom: Date,
+        placeAvailableTo: Date,
+        disabledDates: Set<string>
+    ): Date | null {
+        let searchStartDate = new Date();
+
+        if (searchStartDate < placeAvailableFrom) {
+            searchStartDate = new Date(placeAvailableFrom);
+        }
+
+        let currentDate = new Date(searchStartDate);
+
+        while (currentDate <= placeAvailableTo) {
+            const formattedDate = this.formatDateToYYYYMMDD(currentDate);
+            if (!disabledDates.has(formattedDate)) {
+                return currentDate;
+            }
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+        return null;
+    }
+
+    private validateDateRange() {
+        const beginningDate = new Date(this.dateFrom);
+        const endDate = new Date(this.dateTo);
+
+        let isValid = true;
+
+        const selectedDates = this.getDatesInRange(Timestamp.fromDate(beginningDate), Timestamp.fromDate(endDate));
+        for (const selectedDate of selectedDates) {
+            if (this.disabledDatesSet.has(selectedDate)) {
+                isValid = false;
+                break;
+            }
+        }
+        return isValid;
     }
 }

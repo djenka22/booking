@@ -1,6 +1,6 @@
 import {Injectable, OnDestroy} from '@angular/core';
 import {doc, docData, Firestore, setDoc} from "@angular/fire/firestore";
-import {BehaviorSubject, concatMap, from, lastValueFrom, map, Observable, of, switchMap, take, tap} from "rxjs";
+import {BehaviorSubject, concatMap, from, lastValueFrom, map, Observable, of, switchMap, take} from "rxjs";
 import {User} from "./user.model";
 import {HttpClient} from "@angular/common/http";
 import {apiKey} from "../../environments/environment";
@@ -71,8 +71,10 @@ export class AuthService implements OnDestroy {
             password: password,
             returnSecureToken: true
         }).pipe(
-            tap(this.setUserData.bind(this))
-        )
+            concatMap(response =>  from(this.setUserData(response)).pipe(
+                    map (() => response)
+                )
+            ));
     }
 
     async logout() {
