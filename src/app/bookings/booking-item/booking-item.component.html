@@ -1,0 +1,19 @@
+<h5 class="ion-text-center">Future Bookings</h5>
+<div style="border-top: 1px solid #8ef0c5; border-bottom: 1px solid #8ef0c5">
+    <cdk-virtual-scroll-viewport itemSize="72" minBufferPx="720" maxBufferPx="1500"
+                                 style="height: 144px;">
+        @if (fetchLoading) {
+            <ion-spinner class="ion-text-center" color="primary"></ion-spinner>
+        } @else {
+            <ion-item class="ion-padding-horizontal ion-text-left" *cdkVirtualFor="let bookingWithUser of bookingsWithUser">
+                <ion-label>
+                    <ion-text color="tertiary">{{ bookingWithUser.booking.bookedFrom.toDate() | date }}
+                        - {{ bookingWithUser.booking.bookedTo.toDate() | date }}
+                    </ion-text>
+                    <p>Guests: {{ bookingWithUser.booking.guestNumber }}</p>
+                    <p>Booked by: {{ bookingWithUser.user.firstName }} {{ bookingWithUser.user.lastName }}</p>
+                </ion-label>
+            </ion-item>
+        }
+    </cdk-virtual-scroll-viewport>
+</div>

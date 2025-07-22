@@ -193,7 +193,7 @@ export class BookingService {
         return collectionData(q, {idField: 'id'}) as Observable<Booking[]>;
     }
 
-    findAllBookingsByPlaceIdAfterDate(placeId: string, date: Date): Observable<Booking[]> {
+    findAllBookingsByPlaceIdAfterBookedToDate(placeId: string, date: Date): Observable<Booking[]> {
         const placeRef = doc(this.firestore, 'places', placeId) as DocumentReference<Place>;
         const cutoffTimestamp = Timestamp.fromDate(date);
 
@@ -304,7 +304,7 @@ export class BookingService {
     }
 
     async hasPlaceFutureBookings(place: Place) {
-        const bookings = await lastValueFrom(this.findAllBookingsByPlaceIdAfterDate(place.id, new Date()));
+        const bookings = await lastValueFrom(this.findAllBookingsByPlaceIdAfterBookedToDate(place.id, new Date()));
         return bookings.length > 0;
     }
 }

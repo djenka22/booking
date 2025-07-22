@@ -11,6 +11,7 @@ import {
     IonGrid,
     IonHeader,
     IonImg,
+    IonLabel,
     IonRow,
     IonSpinner,
     IonText,
@@ -24,13 +25,14 @@ import {ActivatedRouteService} from "../../shared/activated-route.service";
 import {PlacesService} from "../../places.service";
 import {BookingService} from "../../../bookings/booking.service";
 import {switchMap, take} from "rxjs";
+import {BookingItemComponent} from "../../../bookings/booking-item/booking-item.component";
 
 @Component({
     selector: 'app-offer-bookings',
     templateUrl: './offer-bookings.page.html',
     styleUrls: ['./offer-bookings.page.scss'],
     standalone: true,
-    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonBackButton, IonButtons, IonButton, RouterLink, IonCol, IonGrid, IonRow, IonSpinner, IonImg, IonText]
+    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonBackButton, IonButtons, IonButton, RouterLink, IonCol, IonGrid, IonRow, IonSpinner, IonImg, IonText, BookingItemComponent, IonLabel]
 })
 export class OfferBookingsPage implements OnInit {
 

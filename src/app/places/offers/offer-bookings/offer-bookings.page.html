@@ -20,7 +20,7 @@
         <ion-grid class="ion-no-padding">
             <ion-row>
                 <ion-col size-sm="6" offset-sm="3" class="ion-no-padding">
-                    <ion-img [src]="place.imageUrl" style="width: 400px; height: 400px"></ion-img>
+                    <ion-img [src]="place.imageUrl" style="width: 400px; height: 200px"></ion-img>
                 </ion-col>
             </ion-row>
             <ion-row>
@@ -30,18 +30,23 @@
             </ion-row>
             <ion-row>
                 <ion-col size="6" class="ion-text-center">
-                    <h4>Available from</h4>
-                    <p>{{ place.availableFrom.toDate() | date }}</p>
+                    <ion-label>
+                        <h5>Available from</h5>
+                        <p>{{ place.availableFrom.toDate() | date }}</p>
+                    </ion-label>
                 </ion-col>
-                <ion-col size="6" class="ion-text-center">
-                    <h4>Available to</h4>
-                    <p>{{ place.availableTo.toDate() | date }}</p>
+                <ion-col size="6" class="ion-text-center ion-padding-bottom">
+                    <ion-label>
+                        <h5>Available to</h5>
+                        <p>{{ place.availableTo.toDate() | date }}</p>
+                    </ion-label>
                 </ion-col>
             </ion-row>
             @if(hasPlaceFutureBookings) {
-                <ion-row>
+                <app-booking-item [place]="place"></app-booking-item>
+                <ion-row class="ion-padding-top">
                     <ion-col size-sm="6" offset-sm="3" class="ion-text-center ion-padding-top">
-                        <ion-text color="tertiary">{{place.title}} has future bookings</ion-text>
+                        <ion-text color="danger">Can not edit or delete {{place.title}} since it has future bookings</ion-text>
                     </ion-col>
                 </ion-row>
             }

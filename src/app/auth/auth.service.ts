@@ -1,5 +1,5 @@
 import {Injectable, OnInit} from '@angular/core';
-import {doc, docData, Firestore, setDoc} from "@angular/fire/firestore";
+import {collection, collectionData, doc, docData, Firestore, query, setDoc, where} from "@angular/fire/firestore";
 import {BehaviorSubject, concatMap, filter, from, lastValueFrom, map, Observable, take} from "rxjs";
 import {User} from "./user.model";
 import {
@@ -113,6 +113,11 @@ export class AuthService implements OnInit {
     findUserById(userId: string): Observable<UserData> {
         const userDocRef = doc(this.firestore, 'users', userId);
         return (docData(userDocRef, {idField: 'id'}) as Observable<UserData>).pipe(take(1));
+    }
+
+    findUsersByIds(userIds: string[]): Observable<User[]> {
+        const q = query(collection(this.firestore, 'users'), where("id", "in", userIds));
+        return  collectionData(q, {idField: 'id'}) as Observable<User[]>;
     }
 
     private async setUserData(userCredential: UserCredential, firstName?: string, lastName?: string) {
