@@ -7,6 +7,7 @@ export class NewPlace {
     description: string;
     imageUrl: string;
     price: number;
+    guestNumber: number;
     featured: boolean
     availableFrom: Date;
     availableTo: Date;
@@ -14,7 +15,7 @@ export class NewPlace {
     searchKeywords: string[];
 
 
-    constructor(title: string, description: string, imageUrl: string, price: number, featured: boolean, availableFrom: Date, availableTo: Date, user: DocumentReference<User>, searchKeywords: string[], id?: string) {
+    constructor(title: string, description: string, imageUrl: string, guestNumber: number, price: number, featured: boolean, availableFrom: Date, availableTo: Date, user: DocumentReference<User>, searchKeywords: string[], id?: string) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -25,5 +26,6 @@ export class NewPlace {
         this.availableTo = availableTo;
         this.user = user;
         this.searchKeywords = searchKeywords;
+        this.guestNumber = guestNumber;
     }
 }

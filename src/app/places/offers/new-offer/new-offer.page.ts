@@ -59,6 +59,7 @@ export class NewOfferPage implements OnInit, OnDestroy {
             this._offerForm?.value['title'],
             this._offerForm?.value['description'],
             this._offerForm?.value['price'],
+            this._offerForm?.value['guestNumber'],
             new Date(this._offerForm?.value['availableFrom']),
             new Date(this._offerForm?.value['availableTo']),
         ).then(

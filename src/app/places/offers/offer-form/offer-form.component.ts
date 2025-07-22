@@ -61,6 +61,10 @@ export class OfferFormComponent implements OnInit {
                 updateOn: 'change',
                 validators: [Validators.required, Validators.maxLength(180)]
             }],
+            guestNumber: [this.offer()?.guestNumber, {
+                updateOn: 'blur',
+                validators: [Validators.required, Validators.max(12)]
+            }],
             price: [this.offer()?.price, {
                 updateOn: 'blur',
                 validators: [Validators.required, Validators.min(1)]

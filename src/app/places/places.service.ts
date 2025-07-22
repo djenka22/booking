@@ -83,7 +83,7 @@ export class PlacesService {
         );
     }
 
-    async addPlace(title: string, description: string, price: number, dateFrom: Date, dateTo: Date) {
+    async addPlace(title: string, description: string, guestNumber: number, price: number, dateFrom: Date, dateTo: Date) {
 
         const userId = await lastValueFrom(this.authService.userId)
         if (!userId) {
@@ -96,6 +96,7 @@ export class PlacesService {
             title,
             description,
             imageUrl: '',
+            guestNumber,
             price,
             featured: false,
             availableFrom: dateFrom,

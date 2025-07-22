@@ -8,6 +8,7 @@ export interface Place {
     title: string;
     description: string;
     imageUrl: string;
+    guestNumber: number;
     price: number;
     featured: boolean
     availableFrom: Timestamp;

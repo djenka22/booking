@@ -76,6 +76,7 @@ export class CreateBookingComponent implements OnInit {
     guestNumber: string = '2';
     disabledDatesSet: Set<string> = new Set();
     firstAvailableDate!: Date;
+    guestNumberIterator: string[] = [];
 
     constructor(private authService: AuthService,
                 private bookingService: BookingService,
@@ -87,6 +88,7 @@ export class CreateBookingComponent implements OnInit {
 
     ngOnInit() {
         console.log('CreateBookingComponent ngOnInit');
+        this.guestNumberIterator = Array.from({length: this.place().guestNumber}, (_, i) => (i + 1).toString());
 
         this.fetchLoading = true;
         this.authService.user.pipe(
@@ -135,8 +137,6 @@ export class CreateBookingComponent implements OnInit {
                 this.dateFrom = this.firstAvailableDate.toISOString();
                 this.dateTo = this.firstAvailableDate.toISOString();
                 this.fetchLoading = false;
-
-
             },
         );
     }
@@ -149,14 +149,12 @@ export class CreateBookingComponent implements OnInit {
     }
 
     onDateFromChange() {
-
         const newDateFromObj = new Date(this.dateFrom);
         const currentToDateObj = new Date(this.dateTo);
 
         if (newDateFromObj > currentToDateObj) {
             this.dateTo = this.dateFrom;
         }
-
     }
 
 
