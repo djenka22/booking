@@ -12,19 +12,19 @@ export class Booking {
                 public user: DocumentReference<User>,
                 public guestNumber: number,
                 public bookedFrom: Timestamp,
-                public bookedTo: Timestamp) {
+                public bookedTo: Timestamp,
+                public datesInRange: string[]) {
     }
 }
 
 export class NewBooking {
 
-    public fetchedPlace?: Place;
-
     constructor(public place: DocumentReference<Place>,
                 public user: DocumentReference<User>,
                 public guestNumber: number,
                 public bookedFrom: Timestamp,
-                public bookedTo: Timestamp) {
+                public bookedTo: Timestamp,
+                public datesInRange: string[]) {
     }
 }
 
@@ -35,7 +35,7 @@ export interface CreateBookingDto {
         existingBookingId?: string,
         guestNumber: number,
         startDate: Date,
-        endDate: Date
+        endDate: Date,
     },
     role: 'cancel' | 'confirm' | 'update'
 }

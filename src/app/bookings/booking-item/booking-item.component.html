@@ -1,12 +1,56 @@
-<h5 class="ion-text-center">Future Bookings</h5>
-<div style="border-top: 1px solid #8ef0c5; border-bottom: 1px solid #8ef0c5">
-    <cdk-virtual-scroll-viewport itemSize="72" minBufferPx="720" maxBufferPx="1500"
-                                 style="height: 144px;">
-        @if (fetchLoading) {
-            <ion-spinner class="ion-text-center" color="primary"></ion-spinner>
-        } @else {
-            <ion-item class="ion-padding-horizontal ion-text-left" *cdkVirtualFor="let bookingWithUser of bookingsWithUser">
-                <ion-label>
+@if (fetchLoading) {
+    <ion-spinner class="ion-text-center" color="primary"></ion-spinner>
+} @else {
+    <ion-grid>
+        <ion-row>
+            <ion-col>
+                <ion-card>
+                    <ion-list>
+                        <ion-item lines="none">
+                            <ion-label (click)="onDateFromItemClick()">Booked From:</ion-label>
+                            <ion-datetime-button [style.display]="dateFromDisplay" datetime="dateFrom"></ion-datetime-button>
+                            <ion-icon (click)="cancelDateFromFilter()" [style.display]="dateFromDisplay" name="close-outline"></ion-icon>
+                        </ion-item>
+                        <ion-popover #dateFromRef [keepContentsMounted]="true" (didDismiss)="onDateFromPopoverDismiss()">
+                            <ng-template>
+                                <ion-datetime
+                                        id="dateFrom"
+                                        presentation="date"
+                                        (ionChange)="onDateFromChange($event)">
+                                </ion-datetime>
+                            </ng-template>
+                        </ion-popover>
+
+                        <ion-item lines="none">
+                            <ion-label (click)="onDateToItemClick()">Booked To:</ion-label>
+                            <ion-datetime-button [style.display]="dateToDisplay" datetime="dateTo"></ion-datetime-button>
+                            <ion-icon (click)="cancelDateToFilter()" [style.display]="dateToDisplay" name="close-outline"></ion-icon>
+                        </ion-item>
+                        <ion-popover #dateToRef [keepContentsMounted]="true" (didDismiss)="onDateToPopoverDismiss()">
+                            <ng-template>
+                                <ion-datetime
+
+                                        id="dateTo"
+                                        presentation="date"
+                                        (ionChange)="onDateToChange($event)">
+                                </ion-datetime>
+                            </ng-template>
+                        </ion-popover>
+                    </ion-list>
+                </ion-card>
+            </ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col class="ion-text-center">
+                <ion-button (click)="applyFilter()" [disabled]="!dateFromFilter && !dateToFilter">Filter</ion-button>
+            </ion-col>
+        </ion-row>
+    </ion-grid>
+
+    <ion-list>
+        @for (bookingWithUser of presentedBookingsWithUser; track bookingWithUser.booking.id) {
+            <ion-item class="ion-padding">
+                <ion-label class="ion-text-wrap">
                     <ion-text color="tertiary">{{ bookingWithUser.booking.bookedFrom.toDate() | date }}
                         - {{ bookingWithUser.booking.bookedTo.toDate() | date }}
                     </ion-text>
@@ -15,5 +59,6 @@
                 </ion-label>
             </ion-item>
         }
-    </cdk-virtual-scroll-viewport>
-</div>
+    </ion-list>
+
+}

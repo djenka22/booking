@@ -1,12 +1,28 @@
-import {Component, input, OnInit} from '@angular/core';
-import {IonItem, IonLabel, IonSpinner, IonText, Platform} from "@ionic/angular/standalone";
-import {CdkFixedSizeVirtualScroll, CdkVirtualForOf, CdkVirtualScrollViewport} from "@angular/cdk/scrolling";
+import {Component, input, OnInit, ViewChild} from '@angular/core';
+import {
+    IonButton,
+    IonCard,
+    IonCol,
+    IonDatetime,
+    IonDatetimeButton,
+    IonGrid,
+    IonIcon,
+    IonItem,
+    IonLabel,
+    IonList,
+    IonPopover,
+    IonRow,
+    IonSpinner,
+    IonText
+} from "@ionic/angular/standalone";
 import {BookingService} from "../booking.service";
 import {Place} from "../../places/model/place.model";
 import {Booking} from "../booking.model";
-import {switchMap, take, tap} from "rxjs";
+import {map, of, switchMap, take} from "rxjs";
 import {AuthService, UserData} from "../../auth/auth.service";
 import {DatePipe} from "@angular/common";
+import {closeOutline, searchCircle} from "ionicons/icons";
+import {addIcons} from "ionicons";
 
 @Component({
     selector: 'app-booking-item',
@@ -14,47 +30,57 @@ import {DatePipe} from "@angular/common";
     styleUrls: ['./booking-item.component.scss'],
     imports: [
         IonItem,
-        CdkVirtualScrollViewport,
         IonLabel,
-        CdkFixedSizeVirtualScroll,
-        CdkVirtualForOf,
         IonText,
         DatePipe,
         IonSpinner,
+        IonList,
+        IonDatetimeButton,
+        IonPopover,
+        IonDatetime,
+        IonButton,
+        IonIcon,
+        IonRow,
+        IonCol,
+        IonGrid,
+        IonCard,
     ]
 })
 export class BookingItemComponent implements OnInit {
 
-    place = input.required<Place>();
-    bookingsWithUser?: BookingWithUser[];
+    @ViewChild('dateToRef') dateToRef!: IonPopover;
+    @ViewChild('dateFromRef') dateFromRef!: IonPopover;
 
+    place = input.required<Place>();
+    bookingsWithUser!: BookingWithUser[];
+    presentedBookingsWithUser!: BookingWithUser[];
     fetchLoading: boolean = false;
 
-    currentScreenWidth!: number;
-    currentScreenHeight!: number;
+    dateFromFilter: string | null = null;
+    dateToFilter: string | null = null;
 
-    // Virtual scroll properties
-    virtualItemSize: number = 72; // Default
-    minBuffer: number = 720;     // Default
-    maxBuffer: number = 1500;    // Default
+    dateToDisplay: string = 'none';
+    dateFromDisplay: string = 'none';
+
 
     constructor(private bookingsService: BookingService,
-                private authService: AuthService,
-                private platform: Platform) {
+                private authService: AuthService) {
+        addIcons({searchCircle});
+        addIcons({closeOutline});
     }
 
     ngOnInit() {
         this.fetchLoading = true;
-        let bookings = new Map<string,Booking>();
+        let bookings = new Map<string, Booking>();
         this.bookingsService.findAllBookingsByPlaceIdAfterBookedToDate(this.place().id, new Date())
             .pipe(
                 switchMap(fetchedBookings => {
                     for (let booking of fetchedBookings) {
-                            bookings.set(booking.user.id, booking);
+                        bookings.set(booking.user.id, booking);
                     }
                     return this.authService.findUsersByIds(fetchedBookings.map(booking => booking.user.id)).pipe(take(1));
                 }),
-                tap(users => {
+                map(users => {
                     let bookingsWithUser: BookingWithUser[] = [];
                     users.map(user => {
                         if (bookings.has(user.id)) {
@@ -64,43 +90,90 @@ export class BookingItemComponent implements OnInit {
                             });
                         }
                     });
-                    this.bookingsWithUser = bookingsWithUser;
+                    return bookingsWithUser;
                 })
             ).subscribe(
-            () => {
-                this.updateVirtualScrollProps();
+            bookingsWithUser => {
+                this.bookingsWithUser = bookingsWithUser;
+                this.presentedBookingsWithUser = this.bookingsWithUser;
                 this.fetchLoading = false
             }
         );
-        this.platform.resize.subscribe(() => {
-            this.updateVirtualScrollProps();
-        });
     }
 
-    private updateVirtualScrollProps() {
-        this.currentScreenWidth = this.platform.width();
-        this.currentScreenHeight = this.platform.height();
-
-        // Dynamically adjust itemSize
-        if (this.currentScreenWidth < 576) { // e.g., small phones
-            this.virtualItemSize = 60;
-        } else if (this.currentScreenWidth < 768) { // e.g., larger phones/small tablets
-            this.virtualItemSize = 72;
-        } else { // e.g., tablets/desktops
-            this.virtualItemSize = 85;
-        }
-
-        // Dynamically adjust buffer sizes based on screen height or width
-        // A common strategy is to make them multiples of the screen height
-        this.minBuffer = this.currentScreenHeight * 1.5; // Render 1.5 screen heights worth of content
-        this.maxBuffer = this.currentScreenHeight * 2.5; // Render up to 2.5 screen heights worth of content
-
-        // Or, if your items are horizontal and width is more relevant for buffer:
-        // this.minBuffer = this.currentScreenWidth * 1.5;
-        // this.maxBuffer = this.currentScreenWidth * 2.5;
-
-        console.log(`Screen: ${this.currentScreenWidth}x${this.currentScreenHeight}, ItemSize: ${this.virtualItemSize}, MinBuffer: ${this.minBuffer}, MaxBuffer: ${this.maxBuffer}`);
+    onDateFromChange(event: any) {
+        this.dateFromFilter = event.detail.value;
     }
+
+    onDateToChange(event: any) {
+        this.dateToFilter = event.detail.value;
+    }
+
+    applyFilter() {
+        let bookings = new Map<string, Booking>();
+        const dateFrom = this.dateFromFilter ? new Date(this.dateFromFilter) : null;
+        const dateTo = this.dateToFilter ? new Date(this.dateToFilter) : null;
+
+        this.bookingsService.findBookingsByDatesInRange(dateFrom, dateTo)
+            .pipe(
+                take(1),
+                switchMap(fetchedBookings => {
+                        if (fetchedBookings.length === 0) {
+                            return of([]);
+                        }
+                        for (let booking of fetchedBookings) {
+                            bookings.set(booking.user.id, booking);
+                        }
+                        return this.authService.findUsersByIds(fetchedBookings.map(booking => booking.user.id)).pipe(take(1));
+                    }
+                ),
+                map(users => {
+                    let bookingsWithUser: BookingWithUser[] = [];
+                    users.map(user => {
+                        if (bookings.has(user.id)) {
+                            bookingsWithUser.push({
+                                booking: bookings.get(user.id)!,
+                                user: user
+                            });
+                        }
+                    });
+                    return bookingsWithUser;
+                })
+            ).subscribe(bookingsWithUser => {
+                this.presentedBookingsWithUser = bookingsWithUser;
+            }
+        );
+
+    }
+
+    onDateToItemClick() {
+        this.dateToRef.present();
+    }
+
+    cancelDateToFilter() {
+        this.dateToDisplay = 'none';
+        this.dateToFilter = null;
+        this.presentedBookingsWithUser = this.bookingsWithUser;
+    }
+
+    onDateFromItemClick() {
+        this.dateFromRef.present();
+    }
+
+    cancelDateFromFilter() {
+        this.dateFromDisplay = 'none';
+        this.dateFromFilter = null;
+        this.presentedBookingsWithUser = this.bookingsWithUser;
+    }
+
+    onDateToPopoverDismiss() {
+        this.dateToDisplay = this.dateToFilter ? 'block' : 'none';
+    }
+
+    onDateFromPopoverDismiss() {
+        this.dateFromDisplay = this.dateFromFilter ? 'block' : 'none';
+    }
+
 }
 
 interface BookingWithUser {

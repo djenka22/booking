@@ -42,8 +42,8 @@ export const routes: Routes = [
                     },
                     {
                         path: ':placeId',
-                        loadComponent: () => import('./offers/offer-bookings/offer-bookings.page').then(m => m.OfferBookingsPage)
-                    }
+                        loadComponent: () => import('./offers/offer-detail/offer-detail.page').then(m => m.OfferDetailPage)
+                    },
                 ]
             }
         ],
@@ -52,5 +52,5 @@ export const routes: Routes = [
         path: '',
         redirectTo: '/places/tabs',
         pathMatch: 'full',
-    }
+    },
 ];

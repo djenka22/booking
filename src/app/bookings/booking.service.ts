@@ -32,6 +32,7 @@ import {
 } from "@angular/fire/firestore";
 import {User} from "../auth/user.model";
 import {Timestamp} from "firebase/firestore";
+import {DateUtilsService} from "../shared/utils/date-utils.service";
 
 @Injectable({
     providedIn: 'root'
@@ -111,12 +112,15 @@ export class BookingService {
             return Promise.reject(new Error('Place with ID ${placeId} not found'));
         }
 
+        const datesInRange = DateUtilsService.getDatesInRange(dateFrom, dateTo);
+
         const booking = new NewBooking(
             doc(this.firestore, 'places', placeId) as DocumentReference<Place>,
             doc(this.firestore, 'users', userId) as DocumentReference<User>,
             guestNumber,
             Timestamp.fromDate(dateFrom),
-            Timestamp.fromDate(dateTo)
+            Timestamp.fromDate(dateTo),
+            datesInRange
         );
 
         return addDoc(this.bookingsCollection, {...booking, bookedFrom: dateFrom, bookedTo: dateTo});
@@ -153,17 +157,18 @@ export class BookingService {
             return null; // No booking found
         }
 
-        const docSnap = querySnapshot.docs[0];
-        const data = docSnap.data();
+        const resultSnap = querySnapshot.docs[0];
+        const result = resultSnap.data();
 
         const booking: Booking = {
-            id: docSnap.id,
-            place: data['place'] as DocumentReference<Place>,
-            user: data['user'] as DocumentReference<User>,
-            guestNumber: data['guestNumber'],
-            bookedFrom: data['bookedFrom'],
-            bookedTo: data['bookedTo'],
-            fetchedPlace: null
+            id: resultSnap.id,
+            place: result['place'] as DocumentReference<Place>,
+            user: result['user'] as DocumentReference<User>,
+            guestNumber: result['guestNumber'],
+            bookedFrom: result['bookedFrom'],
+            bookedTo: result['bookedTo'],
+            fetchedPlace: null,
+            datesInRange: result['datesInRange']
         };
 
         return booking;
@@ -203,7 +208,7 @@ export class BookingService {
             where('place', '==', placeRef),
             where('bookedFrom', '>=', cutoffTimestamp)
         );
-        const bookings$1 = collectionData(q1, { idField: 'id' }) as Observable<Booking[]>;
+        const bookings$1 = collectionData(q1, {idField: 'id'}) as Observable<Booking[]>;
 
         // --- Query 2: bookedTo >= date ---
         const q2 = query(
@@ -211,7 +216,7 @@ export class BookingService {
             where('place', '==', placeRef),
             where('bookedTo', '>=', cutoffTimestamp)
         );
-        const bookings$2 = collectionData(q2, { idField: 'id' }) as Observable<Booking[]>;
+        const bookings$2 = collectionData(q2, {idField: 'id'}) as Observable<Booking[]>;
 
         // --- Combine results and deduplicate ---
         return combineLatest([bookings$1, bookings$2]).pipe(
@@ -307,4 +312,47 @@ export class BookingService {
         const bookings = await lastValueFrom(this.findAllBookingsByPlaceIdAfterBookedToDate(place.id, new Date()));
         return bookings.length > 0;
     }
+
+    findBookingsByDatesInRange(dateFrom: Date | null, dateTo: Date | null): Observable<Booking[]> {
+        if (!dateFrom && !dateTo) {
+            return of([]);
+        }
+
+        let bookings$1;
+        if (dateFrom) {
+            const dateFromString = DateUtilsService.formatDateToYYYYMMDD(dateFrom);
+
+            const q1 = query(this.bookingsCollection, where('datesInRange', 'array-contains', dateFromString));
+            bookings$1 = collectionData(q1, {idField: 'id'}) as Observable<Booking[]>;
+        }
+
+        let bookings$2;
+        if (dateTo) {
+            const dateToString = DateUtilsService.formatDateToYYYYMMDD(dateTo);
+            const q2 = query(this.bookingsCollection, where('datesInRange', 'array-contains', dateToString));
+            bookings$2 = collectionData(q2, {idField: 'id'}) as Observable<Booking[]>;
+        }
+
+        if (bookings$1 && bookings$2) {
+            return combineLatest([bookings$1, bookings$2]).pipe(
+                take(1),
+                map(([bookingsFrom, bookingsTo]) => {
+                    const uniqueBookings = new Map<string, Booking>();
+                    bookingsFrom.forEach(booking => uniqueBookings.set(booking.id, booking));
+                    bookingsTo.forEach(booking => uniqueBookings.set(booking.id, booking));
+                    return Array.from(uniqueBookings.values());
+                })
+            );
+        }
+        if (bookings$1) {
+            return bookings$1.pipe(
+                take(1)
+            );
+        }
+        return bookings$2!.pipe(
+            take(1)
+        );
+
+    }
+
 }

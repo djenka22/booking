@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {
@@ -10,8 +10,10 @@ import {
     IonContent,
     IonGrid,
     IonHeader,
+    IonIcon,
     IonImg,
     IonLabel,
+    IonModal,
     IonRow,
     IonSpinner,
     IonText,
@@ -26,15 +28,18 @@ import {PlacesService} from "../../places.service";
 import {BookingService} from "../../../bookings/booking.service";
 import {switchMap, take} from "rxjs";
 import {BookingItemComponent} from "../../../bookings/booking-item/booking-item.component";
+import {addIcons} from "ionicons";
+import {closeCircleOutline} from "ionicons/icons";
 
 @Component({
-    selector: 'app-offer-bookings',
-    templateUrl: './offer-bookings.page.html',
-    styleUrls: ['./offer-bookings.page.scss'],
+    selector: 'app-offer-detail',
+    templateUrl: './offer-detail.page.html',
+    styleUrls: ['./offer-detail.page.scss'],
     standalone: true,
-    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonBackButton, IonButtons, IonButton, RouterLink, IonCol, IonGrid, IonRow, IonSpinner, IonImg, IonText, BookingItemComponent, IonLabel]
+    imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonBackButton, IonButtons, IonButton, RouterLink, IonCol, IonGrid, IonRow, IonSpinner, IonImg, IonText, BookingItemComponent, IonLabel, IonModal, IonIcon]
 })
-export class OfferBookingsPage implements OnInit {
+export class OfferDetailPage implements OnInit {
+    @ViewChild(IonModal) modal!: IonModal;
 
     private _place!: Place;
     private _fetchLoading: boolean = false;
@@ -46,10 +51,11 @@ export class OfferBookingsPage implements OnInit {
                 private placeService: PlacesService,
                 private bookingService: BookingService,
                 private alertController: AlertController) {
+        addIcons({closeCircleOutline})
     }
 
     ngOnInit() {
-        console.log('OfferBookingsPage ngOnInit');
+        console.log('OfferDetailPage ngOnInit');
         this._fetchLoading = true;
         this.activatedRouteService.findPlaceBasedOnRoute(this.activatedRoute, 'placeId').pipe(
             take(1),
@@ -128,4 +134,7 @@ export class OfferBookingsPage implements OnInit {
         })
     }
 
+    onCancel() {
+        this.modal.dismiss();
+    }
 }

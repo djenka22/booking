@@ -29,7 +29,7 @@ import {User} from "../../auth/user.model";
 import {AuthService} from "../../auth/auth.service";
 import {BookingService} from "../booking.service";
 import {map, switchMap, take} from "rxjs";
-import {Timestamp} from "firebase/firestore";
+import {DateUtilsService} from "../../shared/utils/date-utils.service";
 
 @Component({
     selector: 'app-create-booking',
@@ -109,7 +109,7 @@ export class CreateBookingComponent implements OnInit {
             map(bookings => {
                 const allBookedDates: string[] = [];
                 bookings.forEach(booking => {
-                    const datesInBooking = this.getDatesInRange(booking.bookedFrom, booking.bookedTo);
+                    const datesInBooking = DateUtilsService.getDatesInRange(booking.bookedFrom.toDate(), booking.bookedTo.toDate());
                     allBookedDates.push(...datesInBooking);
                 })
                 return allBookedDates;
@@ -126,7 +126,7 @@ export class CreateBookingComponent implements OnInit {
                     return;
                 }
 
-                const firstAvailableDate = this.findFirstAvailableDate(this.place().availableFrom.toDate(), this.place().availableTo.toDate(), this.disabledDatesSet);
+                const firstAvailableDate = DateUtilsService.findFirstAvailableDate(this.place().availableFrom.toDate(), this.place().availableTo.toDate(), this.disabledDatesSet);
                 if (!firstAvailableDate) {
                     this.presentAlertForNoAvailableDates();
                     return;
@@ -204,55 +204,9 @@ export class CreateBookingComponent implements OnInit {
 
     isDateEnabled = (isoString: string) => {
         const date = new Date(isoString);
-        const formattedDate = this.formatDateToYYYYMMDD(date);
+        const formattedDate = DateUtilsService.formatDateToYYYYMMDD(date);
         return !this.disabledDatesSet.has(formattedDate);
     };
-
-    private getDatesInRange(startDate: Timestamp, endDate: Timestamp): string[] {
-        const dates: string[] = [];
-        let currentDate = startDate.toDate();
-        const end = endDate.toDate();
-
-
-        while (currentDate <= end) {
-            const year = currentDate.getFullYear();
-            const month = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // Month is 0-indexed
-            const day = currentDate.getDate().toString().padStart(2, '0');
-            dates.push(`${year}-${month}-${day}`);
-            currentDate.setDate(currentDate.getDate() + 1); // Move to the next day
-        }
-        return dates;
-    }
-
-    private formatDateToYYYYMMDD(date: Date): string {
-        const year = date.getFullYear();
-        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-        const day = date.getDate().toString().padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
-
-    private findFirstAvailableDate(
-        placeAvailableFrom: Date,
-        placeAvailableTo: Date,
-        disabledDates: Set<string>
-    ): Date | null {
-        let searchStartDate = new Date();
-
-        if (searchStartDate < placeAvailableFrom) {
-            searchStartDate = new Date(placeAvailableFrom);
-        }
-
-        let currentDate = new Date(searchStartDate);
-
-        while (currentDate <= placeAvailableTo) {
-            const formattedDate = this.formatDateToYYYYMMDD(currentDate);
-            if (!disabledDates.has(formattedDate)) {
-                return currentDate;
-            }
-            currentDate.setDate(currentDate.getDate() + 1);
-        }
-        return null;
-    }
 
     private validateDateRange() {
         const beginningDate = new Date(this.dateFrom);
@@ -260,7 +214,7 @@ export class CreateBookingComponent implements OnInit {
 
         let isValid = true;
 
-        const selectedDates = this.getDatesInRange(Timestamp.fromDate(beginningDate), Timestamp.fromDate(endDate));
+        const selectedDates = DateUtilsService.getDatesInRange(beginningDate, endDate);
         for (const selectedDate of selectedDates) {
             if (this.disabledDatesSet.has(selectedDate)) {
                 isValid = false;
