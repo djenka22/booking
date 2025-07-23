@@ -108,12 +108,13 @@ export class PlacesService {
         return addDoc(this.placesCollection, newPlace);
     }
 
-    update(placeId: string, title: string, description: string, price: number, availableFrom: Date, availableTo: Date) {
+    update(placeId: string, title: string, description: string, guestNumber: number, price: number, availableFrom: Date, availableTo: Date) {
         const placeDocRef = doc(this.firestore, 'places', placeId);
         return updateDoc(placeDocRef, {
             title,
             description,
             price,
+            guestNumber,
             availableFrom: Timestamp.fromDate(availableFrom),
             availableTo: Timestamp.fromDate(availableTo)
         })

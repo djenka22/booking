@@ -87,6 +87,7 @@ export class EditOfferPage implements OnInit {
             this.place.id,
             this.offerForm?.value['title'],
             this.offerForm?.value['description'],
+            this.offerForm?.value['guestNumber'],
             this.offerForm?.value['price'],
             new Date(this.offerForm?.value['availableFrom']),
             new Date(this.offerForm?.value['availableTo'])
