@@ -4,12 +4,13 @@ import {IonicRouteStrategy, provideIonicAngular} from '@ionic/angular/standalone
 
 import {routes} from './app/app.routes';
 import {AppComponent} from './app/app.component';
-import {initializeApp, provideFirebaseApp} from "@angular/fire/app";
-import {firebaseConfig} from "./environments/environment";
+import {getApp, initializeApp, provideFirebaseApp} from "@angular/fire/app";
+import {firebaseConfig} from "./environments/environment.prod";
 import {getFirestore, provideFirestore} from "@angular/fire/firestore";
 import {getStorage, provideStorage} from "@angular/fire/storage";
 import {provideHttpClient} from "@angular/common/http";
-import {getAuth, provideAuth} from "@angular/fire/auth";
+import {getAuth, initializeAuth, provideAuth} from "@angular/fire/auth";
+import {Capacitor} from "@capacitor/core";
 
 bootstrapApplication(AppComponent, {
     providers: [
@@ -20,6 +21,13 @@ bootstrapApplication(AppComponent, {
         provideFirestore(() => getFirestore()),
         provideStorage(() => getStorage()),
         provideHttpClient(),
-        provideAuth(() => getAuth())
+        provideAuth(() => {
+                if (Capacitor.isNativePlatform()) {
+                    return initializeAuth(getApp())
+                } else {
+                    return getAuth();
+                }
+            }
+        )
     ],
 });

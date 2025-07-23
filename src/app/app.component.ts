@@ -31,7 +31,6 @@ import {Subscription} from "rxjs";
 export class AppComponent implements OnInit, OnDestroy {
 
     authSubscription!: Subscription;
-    private _previousAuthState = false;
 
     constructor(private authService: AuthService,
                 private navController: NavController,
@@ -49,13 +48,12 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        console.log('AppComponent ngOnInit');
+       console.log('AppComponent ngOnInit');
         this.authSubscription = this.authService.isAuthenticated.subscribe(
             isAuth => {
-                if (!isAuth && this._previousAuthState !== isAuth) {
+                if (!isAuth) {
                     this.navController.navigateRoot('/auth');
                 }
-                this._previousAuthState = isAuth;
             });
     }
 
