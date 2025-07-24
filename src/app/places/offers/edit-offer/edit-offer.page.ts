@@ -84,13 +84,16 @@ export class EditOfferPage implements OnInit {
         }
         this._loading = true;
         await this.placesService.update(
-            this.place.id,
-            this.offerForm?.value['title'],
-            this.offerForm?.value['description'],
-            this.offerForm?.value['guestNumber'],
-            this.offerForm?.value['price'],
-            new Date(this.offerForm?.value['availableFrom']),
-            new Date(this.offerForm?.value['availableTo'])
+            {
+                id: this.place.id,
+                title: this.offerForm?.value['title'],
+                description: this.offerForm?.value['description'],
+                guestNumber: this.offerForm?.value['guestNumber'],
+                price: this.offerForm?.value['price'],
+                availableFrom: new Date(this.offerForm?.value['availableFrom']),
+                availableTo: new Date(this.offerForm?.value['availableTo']),
+            }
+
         ).then(
             async (doc) => {
                 this.createdPlaceTitle = this._offerForm?.value['title'];

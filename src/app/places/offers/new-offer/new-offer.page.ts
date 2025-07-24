@@ -56,12 +56,14 @@ export class NewOfferPage implements OnInit, OnDestroy {
         }
         this.loading = true;
         await this.placeService.addPlace(
-            this._offerForm?.value['title'],
-            this._offerForm?.value['description'],
-            this._offerForm?.value['price'],
-            this._offerForm?.value['guestNumber'],
-            new Date(this._offerForm?.value['availableFrom']),
-            new Date(this._offerForm?.value['availableTo']),
+            {
+                title: this._offerForm!.value['title'],
+                description: this._offerForm!.value['description'],
+                price: this._offerForm!.value['price'],
+                guestNumber: this._offerForm!.value['guestNumber'],
+                availableFrom: new Date(this._offerForm!.value['availableFrom']),
+                availableTo: new Date(this._offerForm!.value['availableTo']),
+            }
         ).then(
             async (doc) => {
                 this.createdPlaceTitle = this._offerForm?.value['title'];

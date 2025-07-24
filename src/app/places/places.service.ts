@@ -1,8 +1,7 @@
 import {Injectable} from '@angular/core';
 import {AuthService} from "../auth/auth.service";
 import {BehaviorSubject, lastValueFrom, map, Observable, of, switchMap, take, tap} from "rxjs";
-import {Place} from "./model/place.model";
-import {NewPlace} from "./model/new-place.model";
+import {CreatePlaceDto, NewPlace, Place, UpdatePlaceDto} from "./model/place.model";
 import {
     addDoc,
     collection,
@@ -83,24 +82,24 @@ export class PlacesService {
         );
     }
 
-    async addPlace(title: string, description: string, guestNumber: number, price: number, dateFrom: Date, dateTo: Date) {
+    async addPlace(createPlaceDto: CreatePlaceDto) {
 
         const userId = await lastValueFrom(this.authService.userId)
         if (!userId) {
             return Promise.reject(new Error('User is not authenticated'));
         }
 
-        const searchKeywords = this.generateSearchKeywords(title);
+        const searchKeywords = this.generateSearchKeywords(createPlaceDto.title);
         const userDocRef = doc(this.firestore, 'users', userId) as DocumentReference<User>;
         const newPlace: NewPlace = {
-            title,
-            description,
+            title: createPlaceDto.title,
+            description: createPlaceDto.description,
             imageUrl: '',
-            guestNumber,
-            price,
+            guestNumber: createPlaceDto.guestNumber,
+            price: createPlaceDto.price,
             featured: false,
-            availableFrom: dateFrom,
-            availableTo: dateTo,
+            availableFrom: createPlaceDto.availableFrom,
+            availableTo: createPlaceDto.availableTo,
             user: userDocRef,
             searchKeywords
         };
@@ -108,15 +107,15 @@ export class PlacesService {
         return addDoc(this.placesCollection, newPlace);
     }
 
-    update(placeId: string, title: string, description: string, guestNumber: number, price: number, availableFrom: Date, availableTo: Date) {
-        const placeDocRef = doc(this.firestore, 'places', placeId);
+    update(place: UpdatePlaceDto) {
+        const placeDocRef = doc(this.firestore, 'places', place.id!);
         return updateDoc(placeDocRef, {
-            title,
-            description,
-            price,
-            guestNumber,
-            availableFrom: Timestamp.fromDate(availableFrom),
-            availableTo: Timestamp.fromDate(availableTo)
+            title: place.title,
+            description: place.description,
+            price: place.price,
+            guestNumber: place.guestNumber,
+            availableFrom: Timestamp.fromDate(place.availableFrom),
+            availableTo: Timestamp.fromDate(place.availableTo)
         })
     }
 
