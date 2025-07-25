@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {Booking, NewBooking,} from "./booking.model";
+import {Booking, BookingDto,} from "./booking.model";
 import {
     BehaviorSubject,
     catchError,
@@ -17,7 +17,6 @@ import {AuthService} from '../auth/auth.service';
 import {PlacesService} from "../places/places.service";
 import {Place} from "../places/model/place.model";
 import {
-    addDoc,
     collection,
     collectionData,
     deleteDoc,
@@ -26,7 +25,9 @@ import {
     Firestore,
     getDocs,
     limit,
+    orderBy,
     query,
+    setDoc,
     updateDoc,
     where
 } from "@angular/fire/firestore";
@@ -101,29 +102,32 @@ export class BookingService {
 
     }
 
-    async addBooking(placeId: string, guestNumber: number, dateFrom: Date, dateTo: Date) {
+    async createBooking(createBookingDto: BookingDto) {
         const userId = await lastValueFrom(this.authService.userId);
         if (!userId) {
             return Promise.reject(new Error('User is not authenticated'));
         }
 
-        const place = await lastValueFrom(this.placesService.getPlaceById(placeId));
+        const place = await lastValueFrom(this.placesService.getPlaceById(createBookingDto.placeId!));
         if (!place) {
             return Promise.reject(new Error('Place with ID ${placeId} not found'));
         }
 
-        const datesInRange = DateUtilsService.getDatesInRange(dateFrom, dateTo);
+        const datesInRange = DateUtilsService.getDatesInRange(createBookingDto.bookedFrom!, createBookingDto.bookedTo!);
+        const docRef = doc(this.bookingsCollection);
+        const bookingId = docRef.id;
 
-        const booking = new NewBooking(
-            doc(this.firestore, 'places', placeId) as DocumentReference<Place>,
+        const booking: Booking = new Booking(
+            bookingId,
+            doc(this.firestore, 'places', createBookingDto.placeId!) as DocumentReference<Place>,
             doc(this.firestore, 'users', userId) as DocumentReference<User>,
-            guestNumber,
-            Timestamp.fromDate(dateFrom),
-            Timestamp.fromDate(dateTo),
-            datesInRange
+            createBookingDto.guestNumber!,
+            Timestamp.fromDate(createBookingDto.bookedFrom!),
+            Timestamp.fromDate(createBookingDto.bookedTo!),
+            datesInRange,
         );
 
-        return addDoc(this.bookingsCollection, {...booking, bookedFrom: dateFrom, bookedTo: dateTo});
+        return setDoc(docRef, {...booking});
     }
 
     cancelBooking(bookingId: string) {
@@ -131,12 +135,12 @@ export class BookingService {
         return deleteDoc(bookingsRef);
     }
 
-    updateBooking(bookingId: string, dateFrom: Date, dateTo: Date, guestNumber: number): Promise<void> {
-        const bookingRef = doc(this.firestore, 'bookings', bookingId);
+    updateBooking(bookingDto: BookingDto): Promise<void> {
+        const bookingRef = doc(this.firestore, 'bookings', bookingDto.id!);
         return updateDoc(bookingRef, {
-            bookedFrom: Timestamp.fromDate(dateFrom),
-            bookedTo: Timestamp.fromDate(dateTo),
-            guestNumber: guestNumber
+            bookedFrom: Timestamp.fromDate(bookingDto.bookedFrom!),
+            bookedTo: Timestamp.fromDate(bookingDto.bookedTo!),
+            guestNumber: bookingDto.guestNumber,
         });
     }
 
@@ -198,7 +202,7 @@ export class BookingService {
         return collectionData(q, {idField: 'id'}) as Observable<Booking[]>;
     }
 
-    findAllBookingsByPlaceIdAfterBookedToDate(placeId: string, date: Date): Observable<Booking[]> {
+    findAllBookingsByPlaceIdAfterBookingDate(placeId: string, date: Date): Observable<Booking[]> {
         const placeRef = doc(this.firestore, 'places', placeId) as DocumentReference<Place>;
         const cutoffTimestamp = Timestamp.fromDate(date);
 
@@ -206,7 +210,22 @@ export class BookingService {
         const q1 = query(
             this.bookingsCollection,
             where('place', '==', placeRef),
-            where('bookedFrom', '>=', cutoffTimestamp)
+            where('bookedFrom', '>=', cutoffTimestamp),
+            orderBy('bookedFrom', 'asc')
+        );
+        return  collectionData(q1, {idField: 'id'}) as Observable<Booking[]>;
+    }
+
+    findActiveBookingByPlaceId(placeId: string): Observable<Booking> {
+        const placeRef = doc(this.firestore, 'places', placeId) as DocumentReference<Place>;
+        const currentDate = new Date();
+
+        // --- Query 1: bookedFrom >= date ---
+        const q1 = query(
+            this.bookingsCollection,
+            where('place', '==', placeRef),
+            where('bookedFrom', '<=', currentDate),
+            limit(1)
         );
         const bookings$1 = collectionData(q1, {idField: 'id'}) as Observable<Booking[]>;
 
@@ -214,7 +233,8 @@ export class BookingService {
         const q2 = query(
             this.bookingsCollection,
             where('place', '==', placeRef),
-            where('bookedTo', '>=', cutoffTimestamp)
+            where('bookedTo', '>=', currentDate),
+            limit(1)
         );
         const bookings$2 = collectionData(q2, {idField: 'id'}) as Observable<Booking[]>;
 
@@ -234,7 +254,7 @@ export class BookingService {
                     uniqueBookings.set(booking.id!, booking);
                 });
                 // Convert the Map values back to an array
-                return Array.from(uniqueBookings.values());
+                return Array.from(uniqueBookings.values())[0];
             })
         );
     }
@@ -308,51 +328,100 @@ export class BookingService {
         );
     }
 
-    async hasPlaceFutureBookings(place: Place) {
-        const bookings = await lastValueFrom(this.findAllBookingsByPlaceIdAfterBookedToDate(place.id, new Date()));
-        return bookings.length > 0;
-    }
-
-    findBookingsByDatesInRange(dateFrom: Date | null, dateTo: Date | null): Observable<Booking[]> {
+    findBookingsByDatesInRange(dateFrom: Date | null, dateTo: Date | null, placeId: string): Observable<Booking[]> {
         if (!dateFrom && !dateTo) {
             return of([]);
         }
 
-        let bookings$1;
-        if (dateFrom) {
-            const dateFromString = DateUtilsService.formatDateToYYYYMMDD(dateFrom);
-
-            const q1 = query(this.bookingsCollection, where('datesInRange', 'array-contains', dateFromString));
-            bookings$1 = collectionData(q1, {idField: 'id'}) as Observable<Booking[]>;
-        }
-
-        let bookings$2;
-        if (dateTo) {
-            const dateToString = DateUtilsService.formatDateToYYYYMMDD(dateTo);
-            const q2 = query(this.bookingsCollection, where('datesInRange', 'array-contains', dateToString));
-            bookings$2 = collectionData(q2, {idField: 'id'}) as Observable<Booking[]>;
-        }
-
-        if (bookings$1 && bookings$2) {
-            return combineLatest([bookings$1, bookings$2]).pipe(
+        if (dateFrom && !dateTo) {
+            const dateFromQuery = query(
+                this.bookingsCollection,
+                where('place', '==', doc(this.firestore, 'places', placeId)),
+                where('bookedFrom', '>=', dateFrom)
+            );
+            const dateToQuery = query(
+                this.bookingsCollection,
+                where('place', '==', doc(this.firestore, 'places', placeId)),
+                where('bookedFrom', '<=', dateFrom),
+                where('bookedTo', '>=', dateFrom)
+            );
+            const bookedAfterDateFrom = collectionData(dateFromQuery) as Observable<Booking[]>;
+            const bookedBeforeDateFromAndBookedToAfterDateFrom = collectionData(dateToQuery) as Observable<Booking[]>;
+            return combineLatest([bookedAfterDateFrom, bookedBeforeDateFromAndBookedToAfterDateFrom]).pipe(
                 take(1),
-                map(([bookingsFrom, bookingsTo]) => {
+                map(([bookedAfterDateFrom, bookedBeforeDateFromAndBookedToAfterDateFrom]) => {
                     const uniqueBookings = new Map<string, Booking>();
-                    bookingsFrom.forEach(booking => uniqueBookings.set(booking.id, booking));
-                    bookingsTo.forEach(booking => uniqueBookings.set(booking.id, booking));
+
+                    bookedAfterDateFrom.forEach(booking => {
+                        console.log('Booking after dateFrom:', booking);
+                        uniqueBookings.set(booking.id, booking)
+                    });
+                    bookedBeforeDateFromAndBookedToAfterDateFrom.forEach(booking => {
+                        console.log('Booking before dateFrom and bookedTo after dateFrom:', booking);
+                        uniqueBookings.set(booking.id, booking)
+                    });
                     return Array.from(uniqueBookings.values());
                 })
             );
         }
-        if (bookings$1) {
-            return bookings$1.pipe(
-                take(1)
+
+        if (!dateFrom && dateTo) {
+            const dateFromQuery = query(
+                this.bookingsCollection,
+                where('place', '==', doc(this.firestore, 'places', placeId)),
+                where('bookedTo', '<=', dateTo),
+            );
+            const dateToQuery = query(
+                this.bookingsCollection,
+                where('place', '==', doc(this.firestore, 'places', placeId)),
+                where('bookedFrom', '<=', dateTo),
+                where('bookedTo', '>=', dateTo)
+            );
+            const bookedBeforeDateTo = collectionData(dateFromQuery) as Observable<Booking[]>;
+            const bookedBeforeDateToAndBookedToAfterDateTo = collectionData(dateToQuery) as Observable<Booking[]>;
+            return combineLatest([bookedBeforeDateTo, bookedBeforeDateToAndBookedToAfterDateTo]).pipe(
+                take(1),
+                map(([bookedBeforeDateTo, bookedBeforeDateToAndBookedToAfterDateTo]) => {
+                    const uniqueBookings = new Map<string, Booking>();
+                    bookedBeforeDateTo.forEach(booking => uniqueBookings.set(booking.id, booking));
+                    bookedBeforeDateToAndBookedToAfterDateTo.forEach(booking => uniqueBookings.set(booking.id, booking));
+                    return Array.from(uniqueBookings.values());
+                })
             );
         }
-        return bookings$2!.pipe(
-            take(1)
+
+        const includeBothDatesQuery = query(
+            this.bookingsCollection,
+            where('place', '==', doc(this.firestore, 'places', placeId)),
+            where('bookedFrom', '>=', dateFrom),
+            where('bookedTo', '<=', dateTo)
+        );
+        const dateFromBeforeDateToAfterDateFromQuery = query(
+            this.bookingsCollection,
+            where('place', '==', doc(this.firestore, 'places', placeId)),
+            where('bookedFrom', '<=', dateFrom),
+            where('bookedTo', '>=', dateFrom)
+        );
+        const dateFromBeforeDateToAfterDateToQuery = query(
+            this.bookingsCollection,
+            where('place', '==', doc(this.firestore, 'places', placeId)),
+            where('bookedFrom', '<=', dateTo),
+            where('bookedTo', '>=', dateTo)
         );
 
+        const includeBothDates$ = collectionData(includeBothDatesQuery) as Observable<Booking[]>;
+        const dateFromBeforeDateToAfterDateFromQuery$ = collectionData(dateFromBeforeDateToAfterDateFromQuery) as Observable<Booking[]>;
+        const dateFromBeforeDateToAfterDateToQuery$ = collectionData(dateFromBeforeDateToAfterDateToQuery) as Observable<Booking[]>;
+        return combineLatest([includeBothDates$, dateFromBeforeDateToAfterDateFromQuery$, dateFromBeforeDateToAfterDateToQuery$]).pipe(
+            take(1),
+            map(([includeBothDates, dateFromBeforeDateToAfterDateFromQuery, dateFromBeforeDateToAfterDateToQuery]) => {
+                const uniqueBookings = new Map<string, Booking>();
+                includeBothDates.forEach(booking => uniqueBookings.set(booking.id, booking));
+                dateFromBeforeDateToAfterDateFromQuery.forEach(booking => uniqueBookings.set(booking.id, booking));
+                dateFromBeforeDateToAfterDateToQuery.forEach(booking => uniqueBookings.set(booking.id, booking));
+                return Array.from(uniqueBookings.values());
+            })
+        );
     }
 
 }

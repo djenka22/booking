@@ -1,11 +1,11 @@
 import {Pipe, PipeTransform} from "@angular/core";
-import {Place} from "../model/place.model";
+import {PresentedPlace} from "../discover/discover.page";
 
 @Pipe({
     name: "featuredPlaces",
 })
 export class FeaturedPlacesFilterPipe implements PipeTransform {
-    transform(places: Place[], featured: boolean): Place[] {
+    transform(places: PresentedPlace[], featured: boolean): PresentedPlace[] {
         if (!places || places.length === 0) {
             return [];
         }
@@ -13,7 +13,7 @@ export class FeaturedPlacesFilterPipe implements PipeTransform {
             return places;
         }
 
-        return places.filter(item => item.featured === featured);
+        return places.filter(item => item.place.featured === featured);
     }
 
 }

@@ -19,6 +19,9 @@ import {calendarOutline, checkmarkOutline} from "ionicons/icons";
 import {OfferFormComponent} from "../offer-form/offer-form.component";
 import {PlacesService} from "../../places.service";
 import {Subscription} from "rxjs";
+import {PlaceDto} from "../../model/place.model";
+import {Timestamp} from "firebase/firestore";
+import {AuthService} from "../../../auth/auth.service";
 
 @Component({
     selector: 'app-new-offer',
@@ -35,7 +38,8 @@ export class NewOfferPage implements OnInit, OnDestroy {
 
     constructor(private placeService: PlacesService,
                 private navController: NavController,
-                private alertController: AlertController) {
+                private alertController: AlertController,
+                private authService: AuthService) {
         addIcons({checkmarkOutline})
         addIcons({calendarOutline})
     }
@@ -54,21 +58,32 @@ export class NewOfferPage implements OnInit, OnDestroy {
             console.log('Form is invalid or image is not selected');
             return;
         }
-        this.loading = true;
-        await this.placeService.addPlace(
-            {
-                title: this._offerForm!.value['title'],
-                description: this._offerForm!.value['description'],
-                price: this._offerForm!.value['price'],
-                guestNumber: this._offerForm!.value['guestNumber'],
-                availableFrom: new Date(this._offerForm!.value['availableFrom']),
-                availableTo: new Date(this._offerForm!.value['availableTo']),
+        let featuredPlace = false;
+        this.authService.user.subscribe(
+            user => {
+                if (user!.roles.includes('premium')) {
+                    featuredPlace = true;
+                }
             }
+        )
+        this.loading = true;
+        await this.placeService.createPlace(
+            new PlaceDto(
+                {
+                    title: this._offerForm!.value['title'],
+                    description: this._offerForm!.value['description'],
+                    price: this._offerForm!.value['price'],
+                    guestNumber: this._offerForm!.value['guestNumber'],
+                    availableFrom: Timestamp.fromDate(new Date(this._offerForm!.value['availableFrom'])),
+                    availableTo: Timestamp.fromDate(new Date(this._offerForm!.value['availableTo'])),
+                    featured: featuredPlace,
+                }
+            )
         ).then(
-            async (doc) => {
-                this.createdPlaceTitle = this._offerForm?.value['title'];
-                const imageUrl = await this.placeService.uploadImage(doc.id, this._offerForm?.value['image']);
-                await this.placeService.updateImageUrl(doc.id, imageUrl);
+            async (placeId) => {
+                this.createdPlaceTitle = this._offerForm!.value['title'];
+                const imageUrl = await this.placeService.uploadImage(placeId, this._offerForm?.value['image']);
+                await this.placeService.updateImageUrl(placeId, imageUrl);
                 this.loading = false;
             });
     }
@@ -92,7 +107,6 @@ export class NewOfferPage implements OnInit, OnDestroy {
             message: 'Your offer has been successfully created.',
             buttons: [{
                 text: 'Okay',
-                role: 'destructive',
                 handler: () => {
                     this.navController.navigateBack('/places/tabs/offers');
                     this._offerForm?.reset();

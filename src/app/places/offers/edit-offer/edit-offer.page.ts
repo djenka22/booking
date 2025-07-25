@@ -18,13 +18,14 @@ import {
     IonToolbar,
     NavController
 } from '@ionic/angular/standalone';
-import {Place} from "../../model/place.model";
+import {Place, PlaceDto} from "../../model/place.model";
 import {ActivatedRoute} from "@angular/router";
 import {ActivatedRouteService} from "../../shared/activated-route.service";
 import {addIcons} from "ionicons";
 import {checkmarkOutline} from "ionicons/icons";
 import {OfferFormComponent} from "../offer-form/offer-form.component";
 import {PlacesService} from "../../places.service";
+import {Timestamp} from "firebase/firestore";
 
 @Component({
     selector: 'app-edit-offer',
@@ -84,21 +85,22 @@ export class EditOfferPage implements OnInit {
         }
         this._loading = true;
         await this.placesService.update(
-            {
-                id: this.place.id,
-                title: this.offerForm?.value['title'],
-                description: this.offerForm?.value['description'],
-                guestNumber: this.offerForm?.value['guestNumber'],
-                price: this.offerForm?.value['price'],
-                availableFrom: new Date(this.offerForm?.value['availableFrom']),
-                availableTo: new Date(this.offerForm?.value['availableTo']),
-            }
-
+            new PlaceDto(
+                {
+                    id: this.place.id,
+                    title: this.offerForm?.value['title'],
+                    description: this.offerForm?.value['description'],
+                    guestNumber: this.offerForm?.value['guestNumber'],
+                    price: this.offerForm?.value['price'],
+                    availableFrom: Timestamp.fromDate(new Date(this.offerForm?.value['availableFrom'])),
+                    availableTo: Timestamp.fromDate(new Date(this.offerForm?.value['availableTo'])),
+                }
+            )
         ).then(
-            async (doc) => {
+            async () => {
                 this.createdPlaceTitle = this._offerForm?.value['title'];
                 const imageFile = this.offerForm?.value['image'] as File;
-                if (this.offerForm?.value['image']) {
+                if (imageFile) {
                     const newImageUrl = await this.placesService.uploadImage(this.place.id, imageFile);
                     await this.placesService.updateImageUrl(this.place.id, newImageUrl);
                 }
@@ -124,7 +126,6 @@ export class EditOfferPage implements OnInit {
             message: 'Your offer has been successfully updated.',
             buttons: [{
                 text: 'Okay',
-                role: 'destructive',
                 handler: () => {
                     this.navController.navigateBack(['/', 'places', 'tabs', 'offers', this._place.id]);
                     this._offerForm?.reset();

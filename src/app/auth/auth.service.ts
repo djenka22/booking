@@ -23,18 +23,10 @@ export class AuthService implements OnInit {
         console.log('AuthService: Initializing authentication state listener...');
         this.auth.onAuthStateChanged(async firebaseUser => {
             if (firebaseUser) {
-                const userData = await lastValueFrom(this.findUserById(firebaseUser.uid));
-                const user = new User(
-                    firebaseUser.uid,
-                    firebaseUser.email!,
-                    userData.firstName,
-                    userData.lastName
-                );
+                const user = await lastValueFrom(this.findUserById(firebaseUser.uid));
                 this._user.next(user);
-                console.log('AuthService: User session restored or logged in:', user.email);
             } else {
                 this._user.next(null);
-                console.log('AuthService: User logged out or no session found.');
             }
         })
     }
@@ -101,18 +93,13 @@ export class AuthService implements OnInit {
 
     createUser(userId: string, email: string, firstName: string, lastName: string) {
         const userDocRef = doc(this.firestore, 'users', userId);
-        const userData = {
-            id: userId,
-            email: email,
-            firstName: firstName,
-            lastName: lastName
-        };
-        return setDoc(userDocRef, {...userData});
+        const user = new User(userId, email, firstName, lastName, 'regular');
+        return setDoc(userDocRef, {...user});
     }
 
-    findUserById(userId: string): Observable<UserData> {
+    findUserById(userId: string): Observable<User> {
         const userDocRef = doc(this.firestore, 'users', userId);
-        return (docData(userDocRef, {idField: 'id'}) as Observable<UserData>).pipe(take(1));
+        return (docData(userDocRef, {idField: 'id'}) as Observable<User>).pipe(take(1));
     }
 
     findUsersByIds(userIds: string[]): Observable<User[]> {
@@ -134,22 +121,8 @@ export class AuthService implements OnInit {
             await this.createUser(userId, userEmail, firstName, lastName);
         }
 
-        const userData = await lastValueFrom(this.findUserById(userId));
-
-        const user = new User(
-            userId,
-            userEmail,
-            userData.firstName,
-            userData.lastName,
-        );
+        const user = await lastValueFrom(this.findUserById(userId));
 
         this._user.next(user);
     }
-}
-
-export interface UserData {
-    id: string
-    email: string;
-    firstName: string;
-    lastName: string;
 }

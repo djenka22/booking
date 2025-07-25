@@ -13,16 +13,19 @@ import {
     IonPopover,
     IonRow,
     IonSpinner,
-    IonText
+    IonText,
+    IonTitle
 } from "@ionic/angular/standalone";
 import {BookingService} from "../booking.service";
 import {Place} from "../../places/model/place.model";
 import {Booking} from "../booking.model";
 import {map, of, switchMap, take} from "rxjs";
-import {AuthService, UserData} from "../../auth/auth.service";
+import {AuthService} from "../../auth/auth.service";
 import {DatePipe} from "@angular/common";
 import {closeOutline, searchCircle} from "ionicons/icons";
 import {addIcons} from "ionicons";
+import {FormsModule} from "@angular/forms";
+import {User} from "../../auth/user.model";
 
 @Component({
     selector: 'app-booking-item',
@@ -40,10 +43,12 @@ import {addIcons} from "ionicons";
         IonDatetime,
         IonButton,
         IonIcon,
+        IonCard,
+        IonTitle,
+        FormsModule,
+        IonGrid,
         IonRow,
         IonCol,
-        IonGrid,
-        IonCard,
     ]
 })
 export class BookingItemComponent implements OnInit {
@@ -62,6 +67,10 @@ export class BookingItemComponent implements OnInit {
     dateToDisplay: string = 'none';
     dateFromDisplay: string = 'none';
 
+    currentDate: Date = new Date();
+
+    isEmptySearchResult: boolean = false;
+
 
     constructor(private bookingsService: BookingService,
                 private authService: AuthService) {
@@ -72,13 +81,15 @@ export class BookingItemComponent implements OnInit {
     ngOnInit() {
         this.fetchLoading = true;
         let bookings = new Map<string, Booking>();
-        this.bookingsService.findAllBookingsByPlaceIdAfterBookedToDate(this.place().id, new Date())
+        this.bookingsService.findAllBookingsByPlaceIdAfterBookingDate(this.place().id, new Date())
             .pipe(
+                take(1),
                 switchMap(fetchedBookings => {
                     for (let booking of fetchedBookings) {
                         bookings.set(booking.user.id, booking);
                     }
-                    return this.authService.findUsersByIds(fetchedBookings.map(booking => booking.user.id)).pipe(take(1));
+                    const userIds = fetchedBookings.map(booking => booking.user.id);
+                    return this.authService.findUsersByIds(userIds);
                 }),
                 map(users => {
                     let bookingsWithUser: BookingWithUser[] = [];
@@ -91,6 +102,9 @@ export class BookingItemComponent implements OnInit {
                         }
                     });
                     return bookingsWithUser;
+                }),
+                map(bookingsWithUser => {
+                    return bookingsWithUser.sort((a, b) => a.booking.bookedFrom.toMillis() - b.booking.bookedFrom.toMillis())
                 })
             ).subscribe(
             bookingsWithUser => {
@@ -103,6 +117,9 @@ export class BookingItemComponent implements OnInit {
 
     onDateFromChange(event: any) {
         this.dateFromFilter = event.detail.value;
+        if (this.dateFromFilter && this.dateToFilter && (new Date(this.dateFromFilter) > new Date(this.dateToFilter))) {
+            this.dateToFilter = this.dateFromFilter;
+        }
     }
 
     onDateToChange(event: any) {
@@ -114,17 +131,18 @@ export class BookingItemComponent implements OnInit {
         const dateFrom = this.dateFromFilter ? new Date(this.dateFromFilter) : null;
         const dateTo = this.dateToFilter ? new Date(this.dateToFilter) : null;
 
-        this.bookingsService.findBookingsByDatesInRange(dateFrom, dateTo)
+        this.bookingsService.findBookingsByDatesInRange(dateFrom, dateTo, this.place().id)
             .pipe(
                 take(1),
                 switchMap(fetchedBookings => {
+                    console.log('Fetched bookings:', fetchedBookings);
                         if (fetchedBookings.length === 0) {
                             return of([]);
                         }
                         for (let booking of fetchedBookings) {
                             bookings.set(booking.user.id, booking);
                         }
-                        return this.authService.findUsersByIds(fetchedBookings.map(booking => booking.user.id)).pipe(take(1));
+                        return this.authService.findUsersByIds(fetchedBookings.map(booking => booking.user.id));
                     }
                 ),
                 map(users => {
@@ -138,9 +156,13 @@ export class BookingItemComponent implements OnInit {
                         }
                     });
                     return bookingsWithUser;
+                }),
+                map(bookingsWithUser => {
+                    return bookingsWithUser.sort((a, b) => a.booking.bookedFrom.toMillis() - b.booking.bookedFrom.toMillis())
                 })
             ).subscribe(bookingsWithUser => {
                 this.presentedBookingsWithUser = bookingsWithUser;
+                this.isEmptySearchResult = this.presentedBookingsWithUser.length === 0;
             }
         );
 
@@ -154,6 +176,7 @@ export class BookingItemComponent implements OnInit {
         this.dateToDisplay = 'none';
         this.dateToFilter = null;
         this.presentedBookingsWithUser = this.bookingsWithUser;
+        this.isEmptySearchResult = this.presentedBookingsWithUser.length === 0;
     }
 
     onDateFromItemClick() {
@@ -164,6 +187,8 @@ export class BookingItemComponent implements OnInit {
         this.dateFromDisplay = 'none';
         this.dateFromFilter = null;
         this.presentedBookingsWithUser = this.bookingsWithUser;
+        this.isEmptySearchResult = this.presentedBookingsWithUser.length === 0;
+
     }
 
     onDateToPopoverDismiss() {
@@ -176,7 +201,7 @@ export class BookingItemComponent implements OnInit {
 
 }
 
-interface BookingWithUser {
+export interface BookingWithUser {
     booking: Booking;
-    user: UserData;
+    user: User;
 }

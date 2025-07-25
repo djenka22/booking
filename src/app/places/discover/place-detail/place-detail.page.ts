@@ -25,7 +25,7 @@ import {Place} from "../../model/place.model";
 import {ActivatedRouteService} from "../../shared/activated-route.service";
 import {CreateBookingComponent} from "../../../bookings/create-booking/create-booking.component";
 import {BookingService} from "../../../bookings/booking.service";
-import {Booking, CreateBookingDto} from "../../../bookings/booking.model";
+import {Booking, BookingDto, BookingFormDto} from "../../../bookings/booking.model";
 import {AuthService} from "../../../auth/auth.service";
 import {PlacesService} from "../../places.service";
 import {switchMap, take} from "rxjs";
@@ -174,7 +174,7 @@ export class PlaceDetailPage implements OnInit {
         this.setModalOpen(true);
     }
 
-    async onModalClosed(event: CreateBookingDto) {
+    async onModalClosed(event: BookingFormDto) {
         if (event.role === 'cancel') {
             this.closeModal();
             return;
@@ -183,21 +183,25 @@ export class PlaceDetailPage implements OnInit {
         if (event.bookingData) {
             this._loading = true;
             if (event.role === 'confirm') {
-                await this.bookingService.addBooking(
-                    this.place.id,
-                    event.bookingData.guestNumber,
-                    event.bookingData.startDate,
-                    event.bookingData.endDate
+                await this.bookingService.createBooking(
+                    new BookingDto({
+                        guestNumber: event.bookingData.guestNumber,
+                        bookedFrom: event.bookingData.startDate,
+                        bookedTo: event.bookingData.endDate,
+                        placeId: this.place.id
+                    })
                 ).then(() => {
                     this._loading = false;
                     this.presentBookingAlert("Your booking has been successfully created.");
                 });
             } else {
                 await this.bookingService.updateBooking(
-                    this._existingBooking.id,
-                    event.bookingData.startDate,
-                    event.bookingData.endDate,
-                    event.bookingData.guestNumber,
+                    new BookingDto({
+                        id: this._existingBooking.id,
+                        bookedFrom: event.bookingData.startDate,
+                        bookedTo: event.bookingData.endDate,
+                        guestNumber: event.bookingData.guestNumber,
+                    }),
                 ).then(() => {
                     this._loading = false;
                     this.presentBookingAlert("Your booking has been successfully updated.");
@@ -223,7 +227,6 @@ export class PlaceDetailPage implements OnInit {
             message: message,
             buttons: [{
                 text: 'Okay',
-                role: 'destructive',
                 handler: () => {
                     this.onPlaceBooked();
                 }

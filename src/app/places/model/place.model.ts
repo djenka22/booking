@@ -17,50 +17,20 @@ export interface Place {
     searchKeywords: string[];
 }
 
-export class NewPlace {
-    id?: string;
-    title: string;
-    description: string;
-    imageUrl: string;
-    price: number;
-    guestNumber: number;
-    featured: boolean
-    availableFrom: Date;
-    availableTo: Date;
-    user: DocumentReference<User>;
-    searchKeywords: string[];
+export class PlaceDto {
+    public id?: string;
+    public title?: string;
+    public description?: string;
+    public imageUrl?: string;
+    public guestNumber?: number;
+    public price?: number;
+    public featured?: boolean
+    public availableFrom?: Timestamp;
+    public availableTo?: Timestamp;
+    public user?: DocumentReference<User>;
+    public searchKeywords?: string[];
 
-
-    constructor(title: string, description: string, imageUrl: string, guestNumber: number, price: number, featured: boolean, availableFrom: Date, availableTo: Date, user: DocumentReference<User>, searchKeywords: string[], id?: string) {
-        this.id = id;
-        this.title = title;
-        this.description = description;
-        this.imageUrl = imageUrl;
-        this.price = price;
-        this.featured = featured;
-        this.availableFrom = availableFrom;
-        this.availableTo = availableTo;
-        this.user = user;
-        this.searchKeywords = searchKeywords;
-        this.guestNumber = guestNumber;
+    constructor(data: Partial<PlaceDto>) {
+        Object.assign(this, data);
     }
-}
-
-export interface CreatePlaceDto {
-    title: string;
-    description: string;
-    price: number;
-    guestNumber: number;
-    availableFrom: Date;
-    availableTo: Date;
-}
-
-export interface UpdatePlaceDto {
-    id?: string;
-    title: string;
-    description: string;
-    guestNumber: number;
-    price: number;
-    availableFrom: Date;
-    availableTo: Date;
 }

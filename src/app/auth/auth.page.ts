@@ -158,7 +158,6 @@ export class AuthPage implements OnInit {
             message: message,
             buttons: [{
                 text: 'Okay',
-                role: 'destructive',
                 handler: () => {
                     this.authForm.reset();
                 }

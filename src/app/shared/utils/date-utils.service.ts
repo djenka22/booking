@@ -2,13 +2,17 @@ export class DateUtilsService {
 
     public static getDatesInRange(startDate: Date, endDate: Date): string[] {
         const dates: string[] = [];
-        let currentDate = new Date(startDate);
-        while (currentDate <= endDate) {
-            const year = currentDate.getFullYear();
-            const month = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // Month is 0-indexed
-            const day = currentDate.getDate().toString().padStart(2, '0');
+        let currentDateNormalized = new Date(startDate);
+        currentDateNormalized.setUTCHours(0, 0, 0, 0);
+        const endDateNormalized = new Date(endDate);
+        endDateNormalized.setUTCHours(0, 0, 0, 0);
+
+        while (currentDateNormalized <= endDateNormalized) {
+            const year = currentDateNormalized.getFullYear();
+            const month = (currentDateNormalized.getMonth() + 1).toString().padStart(2, '0'); // Month is 0-indexed
+            const day = currentDateNormalized.getDate().toString().padStart(2, '0');
             dates.push(`${year}-${month}-${day}`);
-            currentDate.setDate(currentDate.getDate() + 1); // Move to the next day
+            currentDateNormalized.setDate(currentDateNormalized.getDate() + 1); // Move to the next day
         }
         return dates;
     }

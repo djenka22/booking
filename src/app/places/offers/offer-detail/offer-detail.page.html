@@ -42,24 +42,82 @@
                     </ion-label>
                 </ion-col>
             </ion-row>
-            @if (hasPlaceFutureBookings) {
+            @if (hasActiveBooking) {
+                <ion-row class="ion-padding-top">
+                    <ion-col size-sm="6" offset-sm="3" class="ion-text-center ion-padding-top">
+                        <ion-text color="danger">Can not edit or delete {{ place.title }} since it has active booking
+                        </ion-text>
+                    </ion-col>
+                </ion-row>
+            } @else if (hasFutureBookings) {
                 <ion-row class="ion-padding-top">
                     <ion-col size-sm="6" offset-sm="3" class="ion-text-center ion-padding-top">
                         <ion-text color="danger">Can not edit or delete {{ place.title }} since it has future bookings
                         </ion-text>
                     </ion-col>
                 </ion-row>
+            }
+            @if (hasActiveBooking) {
+                <ion-row class="ion-padding-top">
+                    <ion-col size-sm="6" offset-sm="3" class="ion-text-center ion-padding-top">
+                        <ion-button id="open-active-booking-modal" color="tertiary">See active booking</ion-button>
+                    </ion-col>
+                </ion-row>
+                <ion-modal class="active-booking-modal" #activeBookingsModal trigger="open-active-booking-modal" [initialBreakpoint]="1"
+                           [breakpoints]="[0, 1]">
+                    <ng-template>
+                        <div class="block">
+                            <ion-card color="light">
+                                <ion-card-header>
+                                    <ion-card-title>
+                                        {{ activeBookingWithUser.user.firstName }} {{ activeBookingWithUser.user.lastName }}
+                                    </ion-card-title>
+                                </ion-card-header>
+                                <ion-card-content>
+                                    <ion-list>
+                                        <ion-item>
+                                            <ion-label color="secondary" class="ion-text-center">
+                                                Booked from:
+                                            </ion-label>
+                                            <ion-label class="ion-text-center">
+                                                {{ activeBookingWithUser.booking.bookedFrom.toDate() | date }}
+                                            </ion-label>
+                                        </ion-item>
+                                        <ion-item>
+                                            <ion-label color="secondary" class="ion-text-center">
+                                                Booked to:
+                                            </ion-label>
+                                            <ion-label class="ion-text-center">
+                                                {{ activeBookingWithUser.booking.bookedTo.toDate() | date }}
+                                            </ion-label>
+                                        </ion-item>
+                                        <ion-item>
+                                            <ion-label color="secondary" class="ion-text-center">
+                                                Guests:
+                                            </ion-label>
+                                            <ion-label class="ion-text-center">
+                                                {{ activeBookingWithUser.booking.guestNumber }}
+                                            </ion-label>
+                                        </ion-item>
+                                    </ion-list>
+                                </ion-card-content>
+                            </ion-card>
+                        </div>
+                    </ng-template>
+                </ion-modal>
+            }
+            @if (hasFutureBookings) {
                 <ion-row class="ion-padding-top">
                     <ion-col size-sm="6" offset-sm="3" class="ion-text-center ion-padding-top">
                         <ion-button id="open-future-bookings-modal" color="primary">See future bookings</ion-button>
                     </ion-col>
                 </ion-row>
-                <ion-modal trigger="open-future-bookings-modal">
+                <ion-modal #futureBookingsModal trigger="open-future-bookings-modal">
                     <ng-template>
                         <ion-header>
                             <ion-toolbar>
                                 <ion-buttons slot="start">
-                                    <ion-button (click)="onCancel()">
+                                    <ion-button (click)="onCancelFutureBookingsModal()">
                                         <ion-icon slot="icon-only" name="close-circle-outline"></ion-icon>
                                     </ion-button>
                                 </ion-buttons>
@@ -71,13 +129,15 @@
                         </ion-content>
                     </ng-template>
                 </ion-modal>
-            } @else {
+            }
+
+            @if (!hasFutureBookings && !hasActiveBooking) {
                 <ion-row>
                     <ion-col class="ion-text-center ion-padding-top ion-padding-end ion-padding-start">
                         <ion-button class="ion-margin"
                                     color="primary"
                                     expand="block"
-                                    [disabled]="hasPlaceFutureBookings"
+                                    [disabled]="hasFutureBookings"
                                     [routerLink]="['/', 'places', 'tabs', 'offers', 'edit', place?.id]">Edit
                         </ion-button>
                     </ion-col>
@@ -87,7 +147,7 @@
                         <ion-button class="ion-margin"
                                     color="secondary"
                                     expand="block"
-                                    [disabled]="hasPlaceFutureBookings"
+                                    [disabled]="hasFutureBookings || hasActiveBooking"
                                     (click)="onDeleteOffer()">Delete
                         </ion-button>
                     </ion-col>

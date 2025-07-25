@@ -17,20 +17,19 @@ export class Booking {
     }
 }
 
-export class NewBooking {
+export class BookingDto {
+    public id?: string;
+    public placeId?: string;
+    public guestNumber?: number;
+    public bookedFrom?: Date;
+    public bookedTo?: Date;
 
-    constructor(public place: DocumentReference<Place>,
-                public user: DocumentReference<User>,
-                public guestNumber: number,
-                public bookedFrom: Timestamp,
-                public bookedTo: Timestamp,
-                public datesInRange: string[]) {
+    constructor(data: Partial<BookingDto>) {
+        Object.assign(this, data);
     }
 }
 
-
-
-export interface CreateBookingDto {
+export interface BookingFormDto {
     bookingData?: {
         existingBookingId?: string,
         guestNumber: number,

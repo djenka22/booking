@@ -24,7 +24,7 @@ import {Place} from "../../places/model/place.model";
 import {addIcons} from "ionicons";
 import {checkmarkOutline, closeOutline} from "ionicons/icons";
 import {FormsModule, NgForm, ReactiveFormsModule} from "@angular/forms";
-import {Booking, CreateBookingDto} from "../booking.model";
+import {Booking, BookingFormDto} from "../booking.model";
 import {User} from "../../auth/user.model";
 import {AuthService} from "../../auth/auth.service";
 import {BookingService} from "../booking.service";
@@ -67,7 +67,7 @@ export class CreateBookingComponent implements OnInit {
     bookModalActionMode = input<'select' | 'random'>();
     place = input.required<Place>();
     existingBooking = input.required<Booking>();
-    isModalClosed = output<CreateBookingDto>();
+    isModalClosed = output<BookingFormDto>();
     dateFrom!: string;
     dateFromMinConstraint!: string;
     dateTo!: string;
@@ -109,8 +109,7 @@ export class CreateBookingComponent implements OnInit {
             map(bookings => {
                 const allBookedDates: string[] = [];
                 bookings.forEach(booking => {
-                    const datesInBooking = DateUtilsService.getDatesInRange(booking.bookedFrom.toDate(), booking.bookedTo.toDate());
-                    allBookedDates.push(...datesInBooking);
+                    allBookedDates.push(...booking.datesInRange);
                 })
                 return allBookedDates;
             }),
@@ -174,7 +173,6 @@ export class CreateBookingComponent implements OnInit {
                 buttons: [
                     {
                         text: 'Okay',
-                        role: 'destructive',
                         handler: () => {
                             if (this.existingBooking()) {
                                 this.dateFrom = this.existingBooking().bookedFrom.toDate().toISOString();
@@ -237,7 +235,6 @@ export class CreateBookingComponent implements OnInit {
             buttons: [
                 {
                     text: 'Okay',
-                    role: 'destructive',
                     handler: () => {
                         this.fetchLoading = false;
                         this.isModalClosed.emit({

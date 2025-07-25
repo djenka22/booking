@@ -1,9 +1,8 @@
 import {Injectable} from '@angular/core';
 import {AuthService} from "../auth/auth.service";
 import {BehaviorSubject, lastValueFrom, map, Observable, of, switchMap, take, tap} from "rxjs";
-import {CreatePlaceDto, NewPlace, Place, UpdatePlaceDto} from "./model/place.model";
+import {Place, PlaceDto} from "./model/place.model";
 import {
-    addDoc,
     collection,
     collectionData,
     deleteDoc,
@@ -13,10 +12,10 @@ import {
     Firestore,
     limit,
     query,
+    setDoc,
     updateDoc,
     where,
 } from "@angular/fire/firestore";
-import {Timestamp} from "firebase/firestore";
 import {StorageReference} from "@firebase/storage";
 import {deleteObject, getDownloadURL, ref, Storage, uploadBytes} from "@angular/fire/storage";
 import {User} from "../auth/user.model";
@@ -82,40 +81,46 @@ export class PlacesService {
         );
     }
 
-    async addPlace(createPlaceDto: CreatePlaceDto) {
+    async createPlace(placeDto: PlaceDto) {
 
         const userId = await lastValueFrom(this.authService.userId)
         if (!userId) {
             return Promise.reject(new Error('User is not authenticated'));
         }
 
-        const searchKeywords = this.generateSearchKeywords(createPlaceDto.title);
+        const searchKeywords = this.generateSearchKeywords(placeDto.title!);
         const userDocRef = doc(this.firestore, 'users', userId) as DocumentReference<User>;
-        const newPlace: NewPlace = {
-            title: createPlaceDto.title,
-            description: createPlaceDto.description,
+
+        const docRef = doc(this.placesCollection);
+        const placeId = docRef.id;
+
+        const newPlace: Place = {
+            id: placeId,
+            title: placeDto.title!,
+            description: placeDto.description!,
             imageUrl: '',
-            guestNumber: createPlaceDto.guestNumber,
-            price: createPlaceDto.price,
-            featured: false,
-            availableFrom: createPlaceDto.availableFrom,
-            availableTo: createPlaceDto.availableTo,
+            guestNumber: placeDto.guestNumber!,
+            price: placeDto.price!,
+            featured: placeDto.featured || false,
+            availableFrom: placeDto.availableFrom!,
+            availableTo: placeDto.availableTo!,
             user: userDocRef,
             searchKeywords
         };
 
-        return addDoc(this.placesCollection, newPlace);
+        await setDoc(docRef, newPlace);
+        return placeId;
     }
 
-    update(place: UpdatePlaceDto) {
-        const placeDocRef = doc(this.firestore, 'places', place.id!);
+    update(placeDto: PlaceDto) {
+        const placeDocRef = doc(this.firestore, 'places', placeDto.id!);
         return updateDoc(placeDocRef, {
-            title: place.title,
-            description: place.description,
-            price: place.price,
-            guestNumber: place.guestNumber,
-            availableFrom: Timestamp.fromDate(place.availableFrom),
-            availableTo: Timestamp.fromDate(place.availableTo)
+            title: placeDto.title,
+            description: placeDto.description,
+            price: placeDto.price,
+            guestNumber: placeDto.guestNumber,
+            availableFrom: placeDto.availableFrom,
+            availableTo: placeDto.availableTo
         })
     }
 

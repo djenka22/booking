@@ -1,0 +1,16 @@
+ion-modal.active-booking-modal {
+  --height: auto;
+
+  .block {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    background-color: #f6f8fc;
+  }
+
+  .block ion-card {
+    width: 100%;
+    box-sizing: border-box;
+    height: 80%; // optional if you want that height
+  }
+}

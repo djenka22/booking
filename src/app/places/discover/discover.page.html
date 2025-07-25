@@ -23,10 +23,10 @@
                 <ion-col size="12" size-sm="8" offset-sm="2" class="ion-text-center">
                     <cdk-virtual-scroll-viewport itemSize="325" minBufferPx="1100" maxBufferPx="2000"
                                                  style="height: 335px;">
-                        @for (place of presentedPlaces | featuredPlaces: true; track place.id) {
+                        @for (presentedPlace of presentedPlaces | featuredPlaces: true; track presentedPlace.place.id) {
                             <app-featured-place
-                                    [_place]="place"
-                                    [_routerLinkPath]="['/', 'places', 'tabs', 'discover', place.id]">
+                                    [_place]="presentedPlace.place"
+                                    [_routerLinkPath]="presentedPlace.routerLinkPath">
                             </app-featured-place>
                         }
                     </cdk-virtual-scroll-viewport>
@@ -38,9 +38,9 @@
                 <cdk-virtual-scroll-viewport itemSize="72" minBufferPx="720" maxBufferPx="1500"
                                              style="height: 216px;">
                     <app-common-place
-                            *cdkVirtualFor="let place of presentedPlaces | featuredPlaces: false"
-                            [place]="place"
-                            [routerLinkPath]="['/', 'places', 'tabs', 'discover', place.id]"
+                            *cdkVirtualFor="let presentedPlace of presentedPlaces | featuredPlaces: false"
+                            [place]="presentedPlace.place"
+                            [routerLinkPath]="presentedPlace.routerLinkPath"
                     ></app-common-place>
                 </cdk-virtual-scroll-viewport>
             </ion-col>

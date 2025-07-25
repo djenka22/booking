@@ -8,12 +8,16 @@
                     <ion-list>
                         <ion-item lines="none">
                             <ion-label (click)="onDateFromItemClick()">Booked From:</ion-label>
-                            <ion-datetime-button [style.display]="dateFromDisplay" datetime="dateFrom"></ion-datetime-button>
-                            <ion-icon (click)="cancelDateFromFilter()" [style.display]="dateFromDisplay" name="close-outline"></ion-icon>
+                            <ion-datetime-button [style.display]="dateFromDisplay"
+                                                 datetime="dateFrom"></ion-datetime-button>
+                            <ion-icon (click)="cancelDateFromFilter()" [style.display]="dateFromDisplay"
+                                      name="close-outline"></ion-icon>
                         </ion-item>
-                        <ion-popover #dateFromRef [keepContentsMounted]="true" (didDismiss)="onDateFromPopoverDismiss()">
+                        <ion-popover #dateFromRef [keepContentsMounted]="true"
+                                     (didDismiss)="onDateFromPopoverDismiss()">
                             <ng-template>
                                 <ion-datetime
+                                        [min]="currentDate.toISOString()"
                                         id="dateFrom"
                                         presentation="date"
                                         (ionChange)="onDateFromChange($event)">
@@ -23,15 +27,19 @@
 
                         <ion-item lines="none">
                             <ion-label (click)="onDateToItemClick()">Booked To:</ion-label>
-                            <ion-datetime-button [style.display]="dateToDisplay" datetime="dateTo"></ion-datetime-button>
-                            <ion-icon (click)="cancelDateToFilter()" [style.display]="dateToDisplay" name="close-outline"></ion-icon>
+                            <ion-datetime-button [style.display]="dateToDisplay"
+                                                 datetime="dateTo"></ion-datetime-button>
+                            <ion-icon (click)="cancelDateToFilter()" [style.display]="dateToDisplay"
+                                      name="close-outline"></ion-icon>
                         </ion-item>
-                        <ion-popover #dateToRef [keepContentsMounted]="true" (didDismiss)="onDateToPopoverDismiss()">
+                        <ion-popover #dateToRef [keepContentsMounted]="true"
+                                     (didDismiss)="onDateToPopoverDismiss()">
                             <ng-template>
                                 <ion-datetime
-
                                         id="dateTo"
+                                        [(ngModel)]="dateToFilter"
                                         presentation="date"
+                                        [min]="dateFromFilter ? dateFromFilter : currentDate.toISOString()"
                                         (ionChange)="onDateToChange($event)">
                                 </ion-datetime>
                             </ng-template>
@@ -42,23 +50,33 @@
         </ion-row>
         <ion-row>
             <ion-col class="ion-text-center">
-                <ion-button (click)="applyFilter()" [disabled]="!dateFromFilter && !dateToFilter">Filter</ion-button>
+                <ion-button color="tertiary" (click)="applyFilter()" [disabled]="!dateFromFilter && !dateToFilter">Filter
+                </ion-button>
             </ion-col>
         </ion-row>
     </ion-grid>
 
-    <ion-list>
-        @for (bookingWithUser of presentedBookingsWithUser; track bookingWithUser.booking.id) {
-            <ion-item class="ion-padding">
-                <ion-label class="ion-text-wrap">
-                    <ion-text color="tertiary">{{ bookingWithUser.booking.bookedFrom.toDate() | date }}
-                        - {{ bookingWithUser.booking.bookedTo.toDate() | date }}
-                    </ion-text>
-                    <p>Guests: {{ bookingWithUser.booking.guestNumber }}</p>
-                    <p>Booked by: {{ bookingWithUser.user.firstName }} {{ bookingWithUser.user.lastName }}</p>
-                </ion-label>
-            </ion-item>
-        }
-    </ion-list>
+    @if(isEmptySearchResult) {
+        <ion-title class="ion-text-center ion-padding">No results for selected dates</ion-title>
+    }
+<ion-grid>
+    <ion-row>
+        <ion-col class="ion-padding">
+            <ion-list>
+                @for (bookingWithUser of presentedBookingsWithUser; track bookingWithUser.booking.id) {
+                    <ion-item class="bookings">
+                        <ion-label class="ion-text-wrap">
+                            <ion-text color="tertiary">{{ bookingWithUser.booking.bookedFrom.toDate() | date }}
+                                - {{ bookingWithUser.booking.bookedTo.toDate() | date }}
+                            </ion-text>
+                            <p>Guests: {{ bookingWithUser.booking.guestNumber }}</p>
+                            <p>Booked by: {{ bookingWithUser.user.firstName }} {{ bookingWithUser.user.lastName }}</p>
+                        </ion-label>
+                    </ion-item>
+                }
+            </ion-list>
+        </ion-col>
+    </ion-row>
+</ion-grid>
 
 }

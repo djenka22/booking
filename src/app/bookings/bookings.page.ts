@@ -24,7 +24,7 @@ import {
     IonToolbar
 } from '@ionic/angular/standalone';
 import {BookingService} from "./booking.service";
-import {Booking, CreateBookingDto} from "./booking.model";
+import {Booking, BookingDto, BookingFormDto} from "./booking.model";
 import {addIcons} from "ionicons";
 import {createOutline, searchCircle, trashOutline} from "ionicons/icons";
 import {Subscription} from "rxjs";
@@ -100,19 +100,46 @@ export class BookingsPage implements OnInit, OnDestroy {
         return this._loadingUpdate;
     }
 
-    async onCancelBooking(bookingId: string, slidingItem: IonItemSliding) {
-        this.loadingMessage = 'Cancelling booking...';
-        this._loadingCancel = true;
+    onDeleteOffer(bookingId: string, slidingItem: IonItemSliding) {
+        this.alertController.create({
+            header: 'Are you sure?',
+            message: 'Are you sure you want to cancel this booking?',
+            buttons: [
+                {
+                    text: 'Back',
+                    role: 'cancel',
+                    handler: () => {
+                        slidingItem.close();
+                    }
+                },
+                {
+                    text: 'Cancel Booking',
+                    role: 'destructive',
+                    handler: async () => await this.onCancelBooking(bookingId)
+                }]
+        }).then(alert => {
+            alert.present();
+        })
+    }
+
+
+    async onCancelBooking(bookingId: string) {
         await this.bookingsService.cancelBooking(bookingId).then(
             () => {
-                this._loadingCancel = false;
-                slidingItem.close();
-                this.presentBookingCanceledAlert();
+               this.alertController.create({
+                   header: 'Done',
+                   message: 'Your booking has been successfully canceled.',
+                   buttons: [{
+                       text: 'Okay',
+                   }],
+               }).then(alert => {
+                   alert.present();
+               })
             }
         );
     }
 
-    async onModalClosed(event: CreateBookingDto) {
+    async onModalClosed(event: BookingFormDto) {
         if (event.role === 'cancel') {
             this.closeModal();
             return;
@@ -123,10 +150,12 @@ export class BookingsPage implements OnInit, OnDestroy {
             this._loadingUpdate = true;
             if (event.role === 'update' && event.bookingData.existingBookingId) {
                 await this.bookingsService.updateBooking(
-                    event.bookingData.existingBookingId,
-                    event.bookingData.startDate,
-                    event.bookingData.endDate,
-                    event.bookingData.guestNumber,
+                    new BookingDto({
+                        id: event.bookingData.existingBookingId,
+                        bookedFrom: event.bookingData.startDate,
+                        bookedTo: event.bookingData.endDate,
+                        guestNumber: event.bookingData.guestNumber,
+                    })
                 ).then(() => {
                     this._loadingUpdate = false;
                     this.presentBookingEditedAlert();
@@ -165,27 +194,13 @@ export class BookingsPage implements OnInit, OnDestroy {
 
     private presentBookingEditedAlert() {
         return this.alertController.create({
-            header: `${this.selectedBBookingForUpdate.fetchedPlace?.title}`,
+            header: 'Cancelled',
             message: 'Your booking has been successfully updated.',
             buttons: [{
                 text: 'Okay',
-                role: 'destructive',
                 handler: () => {
                     this.closeModal();
                 }
-            }],
-        }).then(alert => {
-            alert.present();
-        })
-    }
-
-    private presentBookingCanceledAlert() {
-        return this.alertController.create({
-            header: `${this.selectedBBookingForUpdate.fetchedPlace?.title}`,
-            message: 'Your booking has been successfully canceled.',
-            buttons: [{
-                text: 'Okay',
-                role: 'destructive'
             }],
         }).then(alert => {
             alert.present();

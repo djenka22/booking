@@ -19,9 +19,10 @@ import {FeaturedPlacesFilterPipe} from "../pipes/FeaturedPlacesFilterPipe";
 import {FeaturedPlaceComponent} from "../shared/featured-place/featured-place.component";
 import {CommonPlaceComponent} from "../shared/common-place/common-place.component";
 import {CdkFixedSizeVirtualScroll, CdkVirtualForOf, CdkVirtualScrollViewport} from "@angular/cdk/scrolling";
-import {Subscription} from "rxjs";
+import {Subscription, switchMap} from "rxjs";
 import {addIcons} from "ionicons";
 import {searchCircle} from "ionicons/icons";
+import {AuthService} from "../../auth/auth.service";
 
 @Component({
     selector: 'app-discover',
@@ -36,11 +37,13 @@ export class DiscoverPage implements OnInit, OnDestroy {
     loadedPlaces!: Place[];
     placesSubscription!: Subscription
     placesSubscriptionFetch!: Subscription
-    presentedPlaces!: Place[];
+    presentedPlaces!: PresentedPlace[];
     fetchLoading: boolean = false;
     hasFeaturedPlaces: boolean = false;
+    authenticatedUserId!: string;
 
-    constructor(private placesService: PlacesService) {
+    constructor(private placesService: PlacesService,
+                private authService: AuthService) {
         addIcons({ searchCircle });
     }
 
@@ -55,11 +58,19 @@ export class DiscoverPage implements OnInit, OnDestroy {
 
     ngOnInit() {
         console.log('DiscoverPage ngOnInit');
-        this.placesSubscription = this.placesService.places.subscribe(
+        this.placesSubscription = this.authService.userId.pipe(
+            switchMap(userId => {
+                if (!userId) {
+                    throw new Error('User not authenticated');
+                }
+                this.authenticatedUserId = userId;
+                return this.placesService.places;
+            })
+        ).subscribe(
             places => {
                 this.loadedPlaces = places;
-                this.presentedPlaces = this.loadedPlaces
-                this.hasFeaturedPlaces = this.presentedPlaces.some(place => place.featured);
+                this.presentedPlaces = this.setPresentedPlaces(this.loadedPlaces)
+                this.hasFeaturedPlaces = this.loadedPlaces.some(place => place.featured);
             }
         );
     }
@@ -73,8 +84,8 @@ export class DiscoverPage implements OnInit, OnDestroy {
     }
 
     onClearSearch() {
-        this.presentedPlaces = this.loadedPlaces;
-        this.hasFeaturedPlaces = this.presentedPlaces.some(place => place.featured);
+        this.presentedPlaces = this.setPresentedPlaces(this.loadedPlaces);
+        this.hasFeaturedPlaces = this.loadedPlaces.some(place => place.featured);
     }
 
     onSearchChange(event: any) {
@@ -87,8 +98,45 @@ export class DiscoverPage implements OnInit, OnDestroy {
         this.placesService.searchPlaces(keywords)
             .pipe()
             .subscribe((places: Place[]) => {
-                this.presentedPlaces = places;
-                this.hasFeaturedPlaces = this.presentedPlaces.some(place => place.featured);
+                this.presentedPlaces = this.setPresentedPlaces(places);
+                this.hasFeaturedPlaces = this.presentedPlaces.some(presentedPlace => presentedPlace.place.featured);
             })
+    }
+
+    private setPresentedPlaces(places: Place[]): PresentedPlace[] {
+        const presentedPlaces: PresentedPlace[] = [];
+
+        for (let place of places) {
+            const presentedPlace = new PresentedPlace();
+            presentedPlace.place = place;
+
+            if (this.authenticatedUserId !== place.user.id) {
+                presentedPlace.routerLinkPath = ['/', 'places', 'tabs', 'discover', place.id];
+            } else {
+                presentedPlace.routerLinkPath = ['/', 'places', 'tabs', 'offers', place.id];
+            }
+            presentedPlaces.push(presentedPlace);
+        }
+        return presentedPlaces;
+    }
+}
+
+export class PresentedPlace {
+    private _place!: Place;
+    private _routerLinkPath!: string[]
+
+    set place(place: Place) {
+        this._place = place;
+    }
+    set routerLinkPath(path: string[]) {
+        this._routerLinkPath = path;
+    }
+
+    get place(): Place {
+        return this._place;
+    }
+
+    get routerLinkPath(): string[] {
+        return this._routerLinkPath;
     }
 }
