@@ -2,10 +2,8 @@ export class DateUtilsService {
 
     public static getDatesInRange(startDate: Date, endDate: Date): string[] {
         const dates: string[] = [];
-        let currentDateNormalized = new Date(startDate);
-        currentDateNormalized.setUTCHours(0, 0, 0, 0);
-        const endDateNormalized = new Date(endDate);
-        endDateNormalized.setUTCHours(0, 0, 0, 0);
+        let currentDateNormalized = this.normalizeDateToMidnight(new Date(startDate));
+        const endDateNormalized = this.normalizeDateToMidnight(new Date(endDate));
 
         while (currentDateNormalized <= endDateNormalized) {
             const year = currentDateNormalized.getFullYear();
@@ -46,4 +44,10 @@ export class DateUtilsService {
         }
         return null;
     }
+
+    public static normalizeDateToMidnight(date: Date): Date {
+        date.setHours(0, 0, 0, 0);
+        return date;
+    }
+
 }

@@ -102,28 +102,31 @@ export class BookingService {
 
     }
 
-    async createBooking(createBookingDto: BookingDto) {
+    async createBooking(bookingDto: BookingDto) {
         const userId = await lastValueFrom(this.authService.userId);
         if (!userId) {
             return Promise.reject(new Error('User is not authenticated'));
         }
 
-        const place = await lastValueFrom(this.placesService.getPlaceById(createBookingDto.placeId!));
+        const place = await lastValueFrom(this.placesService.getPlaceById(bookingDto.placeId!));
         if (!place) {
             return Promise.reject(new Error('Place with ID ${placeId} not found'));
         }
 
-        const datesInRange = DateUtilsService.getDatesInRange(createBookingDto.bookedFrom!, createBookingDto.bookedTo!);
+        const datesInRange = DateUtilsService.getDatesInRange(bookingDto.bookedFrom!, bookingDto.bookedTo!);
         const docRef = doc(this.bookingsCollection);
         const bookingId = docRef.id;
 
+        const normalizedBookedFrom = DateUtilsService.normalizeDateToMidnight(bookingDto.bookedFrom!);
+        const normalizedBookedTo = DateUtilsService.normalizeDateToMidnight(bookingDto.bookedTo!);
+
         const booking: Booking = new Booking(
             bookingId,
-            doc(this.firestore, 'places', createBookingDto.placeId!) as DocumentReference<Place>,
+            doc(this.firestore, 'places', bookingDto.placeId!) as DocumentReference<Place>,
             doc(this.firestore, 'users', userId) as DocumentReference<User>,
-            createBookingDto.guestNumber!,
-            Timestamp.fromDate(createBookingDto.bookedFrom!),
-            Timestamp.fromDate(createBookingDto.bookedTo!),
+            bookingDto.guestNumber!,
+            Timestamp.fromDate(normalizedBookedFrom),
+            Timestamp.fromDate(normalizedBookedTo),
             datesInRange,
         );
 
@@ -137,9 +140,13 @@ export class BookingService {
 
     updateBooking(bookingDto: BookingDto): Promise<void> {
         const bookingRef = doc(this.firestore, 'bookings', bookingDto.id!);
+
+        const normalizedBookedFrom = DateUtilsService.normalizeDateToMidnight(bookingDto.bookedFrom!);
+        const normalizedBookedTo = DateUtilsService.normalizeDateToMidnight(bookingDto.bookedTo!);
+
         return updateDoc(bookingRef, {
-            bookedFrom: Timestamp.fromDate(bookingDto.bookedFrom!),
-            bookedTo: Timestamp.fromDate(bookingDto.bookedTo!),
+            bookedFrom: Timestamp.fromDate(normalizedBookedFrom),
+            bookedTo: Timestamp.fromDate(normalizedBookedTo),
             guestNumber: bookingDto.guestNumber,
         });
     }
@@ -305,17 +312,20 @@ export class BookingService {
             return of([]);
         }
 
-        if (dateFrom && !dateTo) {
+        const normalizedDateFrom = DateUtilsService.normalizeDateToMidnight(new Date(dateFrom!));
+        const normalizedDateTo = DateUtilsService.normalizeDateToMidnight(new Date(dateTo!));
+
+        if (normalizedDateFrom && !normalizedDateTo) {
             const dateFromQuery = query(
                 this.bookingsCollection,
                 where('place', '==', doc(this.firestore, 'places', placeId)),
-                where('bookedFrom', '>=', dateFrom)
+                where('bookedFrom', '>=', normalizedDateFrom)
             );
             const dateToQuery = query(
                 this.bookingsCollection,
                 where('place', '==', doc(this.firestore, 'places', placeId)),
-                where('bookedFrom', '<=', dateFrom),
-                where('bookedTo', '>=', dateFrom)
+                where('bookedFrom', '<=', normalizedDateFrom),
+                where('bookedTo', '>=', normalizedDateFrom)
             );
             const bookedAfterDateFrom = collectionData(dateFromQuery) as Observable<Booking[]>;
             const bookedBeforeDateFromAndBookedToAfterDateFrom = collectionData(dateToQuery) as Observable<Booking[]>;
@@ -325,11 +335,9 @@ export class BookingService {
                     const uniqueBookings = new Map<string, Booking>();
 
                     bookedAfterDateFrom.forEach(booking => {
-                        console.log('Booking after dateFrom:', booking);
                         uniqueBookings.set(booking.id, booking)
                     });
                     bookedBeforeDateFromAndBookedToAfterDateFrom.forEach(booking => {
-                        console.log('Booking before dateFrom and bookedTo after dateFrom:', booking);
                         uniqueBookings.set(booking.id, booking)
                     });
                     return Array.from(uniqueBookings.values());
@@ -337,17 +345,17 @@ export class BookingService {
             );
         }
 
-        if (!dateFrom && dateTo) {
+        if (!normalizedDateFrom && normalizedDateTo) {
             const dateFromQuery = query(
                 this.bookingsCollection,
                 where('place', '==', doc(this.firestore, 'places', placeId)),
-                where('bookedTo', '<=', dateTo),
+                where('bookedTo', '<=', normalizedDateTo),
             );
             const dateToQuery = query(
                 this.bookingsCollection,
                 where('place', '==', doc(this.firestore, 'places', placeId)),
-                where('bookedFrom', '<=', dateTo),
-                where('bookedTo', '>=', dateTo)
+                where('bookedFrom', '<=', normalizedDateTo),
+                where('bookedTo', '>=', normalizedDateTo)
             );
             const bookedBeforeDateTo = collectionData(dateFromQuery) as Observable<Booking[]>;
             const bookedBeforeDateToAndBookedToAfterDateTo = collectionData(dateToQuery) as Observable<Booking[]>;
@@ -365,20 +373,20 @@ export class BookingService {
         const includeBothDatesQuery = query(
             this.bookingsCollection,
             where('place', '==', doc(this.firestore, 'places', placeId)),
-            where('bookedFrom', '>=', dateFrom),
-            where('bookedTo', '<=', dateTo)
+            where('bookedFrom', '>=', normalizedDateFrom),
+            where('bookedTo', '<=', normalizedDateTo)
         );
         const dateFromBeforeDateToAfterDateFromQuery = query(
             this.bookingsCollection,
             where('place', '==', doc(this.firestore, 'places', placeId)),
-            where('bookedFrom', '<=', dateFrom),
-            where('bookedTo', '>=', dateFrom)
+            where('bookedFrom', '<=', normalizedDateFrom),
+            where('bookedTo', '>=', normalizedDateFrom)
         );
         const dateFromBeforeDateToAfterDateToQuery = query(
             this.bookingsCollection,
             where('place', '==', doc(this.firestore, 'places', placeId)),
-            where('bookedFrom', '<=', dateTo),
-            where('bookedTo', '>=', dateTo)
+            where('bookedFrom', '<=', normalizedDateTo),
+            where('bookedTo', '>=', normalizedDateTo)
         );
 
         const includeBothDates$ = collectionData(includeBothDatesQuery) as Observable<Booking[]>;

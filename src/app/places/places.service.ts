@@ -19,6 +19,8 @@ import {
 import {StorageReference} from "@firebase/storage";
 import {deleteObject, getDownloadURL, ref, Storage, uploadBytes} from "@angular/fire/storage";
 import {User} from "../auth/user.model";
+import {DateUtilsService} from "../shared/utils/date-utils.service";
+import {Timestamp} from "firebase/firestore";
 
 @Injectable({
     providedIn: 'root'
@@ -94,6 +96,9 @@ export class PlacesService {
         const docRef = doc(this.placesCollection);
         const placeId = docRef.id;
 
+        const normalizedAvailableFrom = DateUtilsService.normalizeDateToMidnight(placeDto.availableFrom!.toDate());
+        const normalizedAvailableTo = DateUtilsService.normalizeDateToMidnight(placeDto.availableTo!.toDate());
+
         const newPlace: Place = {
             id: placeId,
             title: placeDto.title!,
@@ -102,8 +107,8 @@ export class PlacesService {
             guestNumber: placeDto.guestNumber!,
             price: placeDto.price!,
             featured: placeDto.featured || false,
-            availableFrom: placeDto.availableFrom!,
-            availableTo: placeDto.availableTo!,
+            availableFrom: Timestamp.fromDate(normalizedAvailableFrom!),
+            availableTo: Timestamp.fromDate(normalizedAvailableTo!),
             user: userDocRef,
             searchKeywords
         };
@@ -114,13 +119,17 @@ export class PlacesService {
 
     update(placeDto: PlaceDto) {
         const placeDocRef = doc(this.firestore, 'places', placeDto.id!);
+
+        const normalizedAvailableFrom = DateUtilsService.normalizeDateToMidnight(placeDto.availableFrom!.toDate());
+        const normalizedAvailableTo = DateUtilsService.normalizeDateToMidnight(placeDto.availableTo!.toDate());
+
         return updateDoc(placeDocRef, {
             title: placeDto.title,
             description: placeDto.description,
             price: placeDto.price,
             guestNumber: placeDto.guestNumber,
-            availableFrom: placeDto.availableFrom,
-            availableTo: placeDto.availableTo
+            availableFrom: Timestamp.fromDate(normalizedAvailableFrom!),
+            availableTo: Timestamp.fromDate(normalizedAvailableTo!),
         })
     }
 
