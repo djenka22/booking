@@ -82,7 +82,7 @@ export class OfferDetailPage implements OnInit {
                 this._hasActiveBooking = !!activeBooking;
                 this._hasFutureBookings = futureBookings.length > 0;
                 return forkJoin({
-                    user: this.hasActiveBooking ? this.authService.findUserById(activeBooking.user.id).pipe(take(1)) : of(null),
+                    user: this.hasActiveBooking ? this.authService.findUserById(activeBooking!.user.id).pipe(take(1)) : of(null),
                     activeBooking: of(activeBooking)
                 });
 

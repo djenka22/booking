@@ -216,7 +216,7 @@ export class BookingService {
         return  collectionData(q1, {idField: 'id'}) as Observable<Booking[]>;
     }
 
-    findActiveBookingByPlaceId(placeId: string): Observable<Booking> {
+    findActiveBookingByPlaceId(placeId: string): Observable<Booking | null> {
         const placeRef = doc(this.firestore, 'places', placeId) as DocumentReference<Place>;
         const currentDate = new Date();
 
@@ -225,38 +225,10 @@ export class BookingService {
             this.bookingsCollection,
             where('place', '==', placeRef),
             where('bookedFrom', '<=', currentDate),
-            limit(1)
-        );
-        const bookings$1 = collectionData(q1, {idField: 'id'}) as Observable<Booking[]>;
-
-        // --- Query 2: bookedTo >= date ---
-        const q2 = query(
-            this.bookingsCollection,
-            where('place', '==', placeRef),
             where('bookedTo', '>=', currentDate),
             limit(1)
         );
-        const bookings$2 = collectionData(q2, {idField: 'id'}) as Observable<Booking[]>;
-
-        // --- Combine results and deduplicate ---
-        return combineLatest([bookings$1, bookings$2]).pipe(
-            take(1),
-            map(([bookingsFrom, bookingsTo]) => {
-                const uniqueBookings = new Map<string, Booking>(); // Use a Map for efficient deduplication
-
-                // Add bookings from the first query
-                bookingsFrom.forEach(booking => {
-                    uniqueBookings.set(booking.id!, booking); // Use booking.id! assuming it's always present after idField
-                });
-
-                // Add bookings from the second query (will overwrite if already present, ensuring uniqueness)
-                bookingsTo.forEach(booking => {
-                    uniqueBookings.set(booking.id!, booking);
-                });
-                // Convert the Map values back to an array
-                return Array.from(uniqueBookings.values())[0];
-            })
-        );
+        return (collectionData(q1, {idField: 'id'}) as Observable<Booking[]>).pipe(take(1), map(bookings => bookings.length > 0 ? bookings[0] : null));
     }
 
 
