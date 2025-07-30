@@ -100,7 +100,7 @@ export class BookingsPage implements OnInit, OnDestroy {
         return this._loadingUpdate;
     }
 
-    onDeleteOffer(bookingId: string, slidingItem: IonItemSliding) {
+    onDeleteBooking(bookingId: string, slidingItem: IonItemSliding) {
         this.alertController.create({
             header: 'Are you sure?',
             message: 'Are you sure you want to cancel this booking?',
@@ -114,6 +114,7 @@ export class BookingsPage implements OnInit, OnDestroy {
                 },
                 {
                     text: 'Cancel Booking',
+                    cssClass: 'delete-button-color',
                     role: 'destructive',
                     handler: async () => await this.onCancelBooking(bookingId)
                 }]

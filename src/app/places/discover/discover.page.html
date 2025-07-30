@@ -9,7 +9,6 @@
     </ion-toolbar>
 </ion-header>
 
-
 <ion-content class="ion-padding">
     <ion-grid>
         @if (fetchLoading) {
@@ -21,14 +20,13 @@
         } @else if (hasFeaturedPlaces) {
             <ion-row>
                 <ion-col size="12" size-sm="8" offset-sm="2" class="ion-text-center">
-                    <cdk-virtual-scroll-viewport itemSize="325" minBufferPx="1100" maxBufferPx="2000"
-                                                 style="height: 355px;">
-                        @for (presentedPlace of presentedPlaces | featuredPlaces: true; track presentedPlace.place.id) {
-                            <app-featured-place
-                                    [_place]="presentedPlace.place"
-                                    [_routerLinkPath]="presentedPlace.routerLinkPath">
-                            </app-featured-place>
-                        }
+                    <cdk-virtual-scroll-viewport itemSize="350" minBufferPx="1100" maxBufferPx="2000"
+                                                 style="height: 395px">
+                        <app-featured-place
+                                *cdkVirtualFor="let presentedPlace of presentedPlaces | featuredPlaces: true"
+                                [_place]="presentedPlace.place"
+                                [_routerLinkPath]="presentedPlace.routerLinkPath"
+                        ></app-featured-place>
                     </cdk-virtual-scroll-viewport>
                 </ion-col>
             </ion-row>
