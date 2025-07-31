@@ -1,9 +1,9 @@
-<ion-card style="height: 380px">
+<ion-card>
     <ion-card-header>
         <ion-card-title>{{ _place().title }}</ion-card-title>
         <ion-card-subtitle>{{ _place().price | currency }} / Night</ion-card-subtitle>
     </ion-card-header>
-    <ion-img style="height: 200px" [src]="_place().imageUrl"></ion-img>
+    <ion-img [src]="_place().imageUrl"></ion-img>
     <ion-card-content>{{ _place().description }}</ion-card-content>
     <ion-button
             color="primary"
