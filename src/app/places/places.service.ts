@@ -197,24 +197,20 @@ export class PlacesService {
 
     searchPlaces(searchTerm: string): Observable<Place[]> {
         if (!searchTerm || searchTerm.trim() === '') {
-            return new Observable(observer => observer.next([])); // Return empty if no search term
+            return new Observable(observer => observer.next([]));
         }
 
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
 
-        // Option 2: `array-contains-any` (finds documents that contain ANY of the individual words in the search term)
-        // This is generally more useful for multi-word searches.
         const searchTermsArray = lowerCaseSearchTerm.split(/\s+/).filter(term => term.length > 0);
 
         if (searchTermsArray.length === 0) {
             return new Observable(observer => observer.next([]));
         }
 
-        // Firestore's `array-contains-any` can take up to 10 distinct values.
-        // If your user types more than 10 words, you'll need to truncate or refine this.
         const q = query(
             this.placesCollection,
-            where('searchKeywords', 'array-contains-any', searchTermsArray.slice(0, 10)), // Limit to first 10 words
+            where('searchKeywords', 'array-contains-any', searchTermsArray.slice(0, 10)),
             limit(20)
         );
 
@@ -224,13 +220,11 @@ export class PlacesService {
 
     searchOffers(searchTerm: string): Observable<Place[]> {
         if (!searchTerm || searchTerm.trim() === '') {
-            return new Observable(observer => observer.next([])); // Return empty if no search term
+            return new Observable(observer => observer.next([]));
         }
 
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
 
-        // Option 2: `array-contains-any` (finds documents that contain ANY of the individual words in the search term)
-        // This is generally more useful for multi-word searches.
         const searchTermsArray = lowerCaseSearchTerm.split(/\s+/).filter(term => term.length > 0);
 
         if (searchTermsArray.length === 0) {
@@ -246,8 +240,6 @@ export class PlacesService {
 
                 const userDocRef = doc(this.firestore, 'users', userId);
 
-                // Firestore's `array-contains-any` can take up to 10 distinct values.
-                // If your user types more than 10 words, you'll need to truncate or refine this.
                 const q = query(
                     this.placesCollection,
                     where('user', '==', userDocRef),
@@ -261,11 +253,9 @@ export class PlacesService {
         )
     }
 
-    // Function to generate search keywords
     private generateSearchKeywords(title: string): string[] {
         const keywords: Set<string> = new Set();
 
-        // Split title and description into words, convert to lowercase, and add to set
         title.toLowerCase().split(/\s+/).forEach(word => {
             if (word.length > 0) {
                 keywords.add(word);

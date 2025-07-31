@@ -2,7 +2,7 @@ import {Timestamp} from 'firebase/firestore'
 import {DocumentReference} from "@angular/fire/firestore";
 import {User} from "../../auth/user.model";
 
-export interface Place {
+export class Place {
 
     id: string;
     title: string;
@@ -13,8 +13,24 @@ export interface Place {
     featured: boolean
     availableFrom: Timestamp;
     availableTo: Timestamp;
-    user: DocumentReference<User>,
+    user: DocumentReference<User>;
     searchKeywords: string[];
+
+    constructor(id: string, title: string, description: string, imageUrl: string, guestNumber: number, price: number,
+                featured: boolean, availableFrom: Timestamp, availableTo:
+                Timestamp, user: DocumentReference<User>, searchKeywords: string[]) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.imageUrl = imageUrl;
+        this.guestNumber = guestNumber;
+        this.price = price;
+        this.featured = featured;
+        this.availableFrom = availableFrom;
+        this.availableTo = availableTo;
+        this.user = user;
+        this.searchKeywords = searchKeywords;
+    }
 }
 
 export class PlaceDto {
