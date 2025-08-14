@@ -50,3 +50,16 @@ export class PlaceDto {
         Object.assign(this, data);
     }
 }
+
+export interface PlaceWithDaysDto {
+    placeTitle: string;
+    daysCount: number;
+}
+
+export interface PlaceBookingOverview {
+    placeTitle: string;
+    daysThisMonth: number;
+    daysLastMonth: number;
+    daysThisYear: number;
+    daysLastYear: number;
+}

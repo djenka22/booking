@@ -1,0 +1,133 @@
+<ion-header>
+    <ion-toolbar class="ion-padding-end">
+        <ion-buttons slot="start">
+            <ion-menu-button menu="main-menu"></ion-menu-button>
+        </ion-buttons>
+        <ion-title>Places Overview</ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+    @if (loading) {
+        <ion-content class="ion-padding ion-text-center">
+            <ion-spinner color="primary"></ion-spinner>
+        </ion-content>
+    } @else {
+        <!-- Stats Summary -->
+        <ion-card>
+            <ion-card-header>
+                <ion-card-title>Quick Stats</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+                <ion-grid>
+                    <ion-row class="stats-row">
+                        <ion-col class="stat-box">
+                            <div class="stat-number">{{ placesCount }}</div>
+                            <div class="stat-label">Total Places</div>
+                        </ion-col>
+                        <ion-col class="stat-box">
+                            <div class="stat-number">{{ availablePlacesCurrentMonth }}</div>
+                            <div class="stat-label">Available This Month</div>
+                        </ion-col>
+                    </ion-row>
+                </ion-grid>
+            </ion-card-content>
+        </ion-card>
+
+        <!-- Available Places -->
+        <ion-card>
+            <ion-card-header>
+                <div style="display: flex; align-items: center;">
+                    <ion-card-title>Places Availability</ion-card-title>
+                    <ion-datetime-button datetime="datetime"></ion-datetime-button>
+                </div>
+                <ion-popover [keepContentsMounted]="true" (didDismiss)="onDatePopoverDismiss()">
+                    <ng-template>
+                        <ion-datetime
+                                [min]="DateUtilsService.toLocalDateISO(today)"
+                                max="2100-12-31"
+                                id="datetime"
+                                presentation="month-year"
+                                [(ngModel)]="selectedDate">
+                        </ion-datetime>
+                    </ng-template>
+                </ion-popover>
+            </ion-card-header>
+        @if (placesAvailability.length === 0) {
+                <p class="ion-text-center">No places available for selected date.</p>
+        }
+            <ion-list>
+                @for (place of placesAvailability; track place.placeTitle) {
+                    <ion-item>
+                        <ion-label>
+                            <h2>{{ place.placeTitle }}</h2>
+                            <ion-badge color="primary">{{ place.daysCount }}</ion-badge>
+                            <p>Nights</p>
+                        </ion-label>
+                        @if (place.daysCount > 0) {
+                            <ion-badge color="success">Available</ion-badge>
+                        } @else {
+                            <ion-badge color="danger">Full</ion-badge>
+                        }
+                    </ion-item>
+                }
+            </ion-list>
+        </ion-card>
+
+
+        <ion-card>
+            <ion-card-header>
+                <ion-card-title>Bookings Overview</ion-card-title>
+            </ion-card-header>
+            <ion-list>
+                @for (place of allPlaces; track place.placeTitle) {
+                    <ion-item>
+                        <ion-grid>
+                            <ion-row class="place-row">
+                                <!-- Place title -->
+                                <ion-col size="4" class="place-title">
+                                    <h2>{{ place.placeTitle }}</h2>
+                                </ion-col>
+
+                                <!-- This Month -->
+                                <ion-col size="2" class="stat-col">
+                                    <ion-badge color="primary">{{ place.daysThisMonth || 0 }}</ion-badge>
+                                    <p>This Month </p>
+                                </ion-col>
+
+                                <!-- Last Month -->
+                                <ion-col size="2" class="stat-col">
+                                    <ion-badge color="tertiary">{{ place.daysLastMonth || 0 }}</ion-badge>
+                                    <p>Last Month</p>
+                                </ion-col>
+
+                                <!-- This Year -->
+                                <ion-col size="2" class="stat-col">
+                                    <ion-badge color="primary">{{ place.daysThisYear || 0 }}</ion-badge>
+                                    <p>This Year</p>
+                                </ion-col>
+
+                                <!-- Last Year -->
+                                <ion-col size="2" class="stat-col">
+                                    <ion-badge color="tertiary">{{ place.daysLastYear || 0 }}</ion-badge>
+                                    <p>Last Year</p>
+                                </ion-col>
+                            </ion-row>
+                        </ion-grid>
+                    </ion-item>
+                }
+            </ion-list>
+        </ion-card>
+
+        <!-- No Data -->
+        @if (placesCount === 0) {
+            <div class="empty-state">
+                <ion-icon name="information-circle-outline" size="large"></ion-icon>
+                <p>No places found for your account.</p>
+            </div>
+        }
+    }
+
+
+</ion-content>

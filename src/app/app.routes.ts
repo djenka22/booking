@@ -13,12 +13,17 @@ export const routes: Routes = [
     },
     {
         path: 'places',
-        loadChildren: () => import('./places/places.routes').then((m) =>m.routes),
+        loadChildren: () => import('./places/places.routes').then((m) => m.routes),
         canMatch: [authGuard]
     },
     {
         path: 'bookings',
         loadComponent: () => import('./bookings/bookings.page').then(m => m.BookingsPage),
+        canMatch: [authGuard]
+    },
+    {
+        path: 'overview',
+        loadComponent: () => import('./overview/overview.page').then(m => m.OverviewPage),
         canMatch: [authGuard]
     },
 ];

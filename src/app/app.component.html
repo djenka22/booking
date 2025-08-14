@@ -23,6 +23,12 @@
                     </ion-item>
                 </ion-menu-toggle>
                 <ion-menu-toggle menu="main-menu">
+                    <ion-item lines="none" routerLink="/overview" routerDirection="root">
+                        <ion-icon name="stats-chart-outline" slot="start"></ion-icon>
+                        <ion-label>Overview</ion-label>
+                    </ion-item>
+                </ion-menu-toggle>
+                <ion-menu-toggle menu="main-menu">
                     <ion-item lines="none" (click)="onLogout()" button="">
                         <ion-icon name="exit-outline" slot="start"></ion-icon>
                         <ion-label>Logout</ion-label>

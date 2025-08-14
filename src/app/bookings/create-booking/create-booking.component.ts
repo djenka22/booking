@@ -132,9 +132,9 @@ export class CreateBookingComponent implements OnInit {
                 }
 
                 this.firstAvailableDate = firstAvailableDate;
-                this.dateFromMinConstraint = this.firstAvailableDate.toISOString();
-                this.dateFrom = this.firstAvailableDate.toISOString();
-                this.dateTo = this.firstAvailableDate.toISOString();
+                this.dateFromMinConstraint = DateUtilsService.toLocalDateISO(this.firstAvailableDate);
+                this.dateFrom = DateUtilsService.toLocalDateISO(this.firstAvailableDate);
+                this.dateTo = DateUtilsService.toLocalDateISO(this.firstAvailableDate);
                 this.fetchLoading = false;
             },
         );

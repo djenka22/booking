@@ -16,7 +16,7 @@ import {
     Platform
 } from '@ionic/angular/standalone';
 import {addIcons} from "ionicons";
-import {businessOutline, checkboxOutline, exitOutline} from "ionicons/icons";
+import {businessOutline, checkboxOutline, exitOutline, statsChartOutline} from "ionicons/icons";
 import {RouterLink} from "@angular/router";
 import {AuthService} from "./auth/auth.service";
 import {Capacitor} from "@capacitor/core";
@@ -38,6 +38,7 @@ export class AppComponent implements OnInit, OnDestroy {
         addIcons({businessOutline})
         addIcons({checkboxOutline})
         addIcons({exitOutline})
+        addIcons({statsChartOutline})
         this.initializeApp();
     }
 

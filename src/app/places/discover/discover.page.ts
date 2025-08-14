@@ -60,6 +60,7 @@ export class DiscoverPage implements OnInit, OnDestroy {
         console.log('DiscoverPage ngOnInit');
         this.placesSubscription = this.authService.userId.pipe(
             switchMap(userId => {
+                console.log('DiscoverPage ngOnInit - userId:', userId);
                 if (!userId) {
                     throw new Error('User not authenticated');
                 }
