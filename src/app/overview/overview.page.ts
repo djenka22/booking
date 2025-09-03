@@ -118,7 +118,7 @@ export class OverviewPage implements OnInit, OnDestroy {
 
                 return merged;
             }),
-            tap(result => this.allPlaces = result)
+            tap(result => this.allPlaces = result.sort((a, b) => b.daysThisMonth - a.daysThisMonth))
         ).subscribe(() => {
             this.loading = false;
         });
