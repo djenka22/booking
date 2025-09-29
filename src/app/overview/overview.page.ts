@@ -125,7 +125,10 @@ export class OverviewPage implements OnInit, OnDestroy {
     }
 
     getCurrentMonthStart() {
-        return  new Date(this.currentYear, this.currentMonth, 1);
+        console.log("currentYear", this.currentYear);
+        console.log("currentMonth", this.currentMonth);
+        console.log("currentMonthStart", new Date(this.currentYear, this.currentMonth, 1).toISOString() );
+        return new Date(this.currentYear, this.currentMonth, 1);
     }
 
     getCurrentMonthEnd() {

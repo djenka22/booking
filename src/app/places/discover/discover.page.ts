@@ -7,6 +7,7 @@ import {
     IonContent,
     IonGrid,
     IonHeader,
+    IonIcon,
     IonMenuButton,
     IonRow,
     IonSearchbar,
@@ -21,7 +22,7 @@ import {CommonPlaceComponent} from "../shared/common-place/common-place.componen
 import {CdkFixedSizeVirtualScroll, CdkVirtualForOf, CdkVirtualScrollViewport} from "@angular/cdk/scrolling";
 import {Subscription, switchMap} from "rxjs";
 import {addIcons} from "ionicons";
-import {searchCircle} from "ionicons/icons";
+import {informationCircleOutline, searchCircle} from "ionicons/icons";
 import {AuthService} from "../../auth/auth.service";
 
 @Component({
@@ -29,7 +30,7 @@ import {AuthService} from "../../auth/auth.service";
     templateUrl: './discover.page.html',
     styleUrls: ['./discover.page.scss'],
     standalone: true,
-    imports: [IonContent, IonHeader, IonToolbar, CommonModule, FormsModule, IonGrid, IonRow, IonCol, FeaturedPlacesFilterPipe, IonButtons, FeaturedPlaceComponent, IonMenuButton, CommonPlaceComponent, CdkVirtualScrollViewport, CdkFixedSizeVirtualScroll, CdkVirtualForOf, IonSpinner, IonSearchbar]
+    imports: [IonContent, IonHeader, IonToolbar, CommonModule, FormsModule, IonGrid, IonRow, IonCol, FeaturedPlacesFilterPipe, IonButtons, FeaturedPlaceComponent, IonMenuButton, CommonPlaceComponent, CdkVirtualScrollViewport, CdkFixedSizeVirtualScroll, CdkVirtualForOf, IonSpinner, IonSearchbar, IonIcon]
 })
 export class DiscoverPage implements OnInit, OnDestroy {
 
@@ -45,6 +46,7 @@ export class DiscoverPage implements OnInit, OnDestroy {
     constructor(private placesService: PlacesService,
                 private authService: AuthService) {
         addIcons({ searchCircle });
+        addIcons({ informationCircleOutline });
     }
 
     ngOnDestroy(): void {

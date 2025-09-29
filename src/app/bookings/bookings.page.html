@@ -5,22 +5,29 @@
             <ion-buttons slot="start">
                 <ion-menu-button menu="main-menu"></ion-menu-button>
             </ion-buttons>
-                <ion-searchbar #searchbar (ionClear)="onClearSearch()" search-icon="search-circle" animated="true"
-                                placeholder="Search bookings..." [debounce]="1000"
-                               (ionInput)="onSearchChange($event)"></ion-searchbar>
+            <ion-searchbar #searchbar (ionClear)="onClearSearch()" search-icon="search-circle" animated="true"
+                           placeholder="Search bookings..." [debounce]="1000"
+                           (ionInput)="onSearchChange($event)"></ion-searchbar>
 
         </ion-toolbar>
     </ion-header>
 
 
     <ion-content>
-        <ion-grid>
-            <ion-row>
-                @if (fetchLoading) {
-                    <ion-col size-md="6" offset-md="3" class="ion-text-center">
-                        <ion-spinner color="primary"></ion-spinner>
-                    </ion-col>
-                } @else {
+        @if (fetchLoading) {
+            <ion-col size-md="6" offset-md="3" class="ion-text-center">
+                <ion-spinner color="primary"></ion-spinner>
+            </ion-col>
+        } @else if (presentedBookings.length === 0) {
+            <!-- No Data -->
+            <div class="empty-state">
+                <ion-icon name="information-circle-outline" size="large"></ion-icon>
+                <p>No bookings found for your account.</p>
+            </div>
+        } @else {
+            <ion-grid>
+                <ion-row>
+
                     <ion-col size-md="6" offset-md="3">
                         <ion-list>
                             @for (booking of presentedBookings; track booking.id) {
@@ -52,9 +59,10 @@
                             }
                         </ion-list>
                     </ion-col>
-                }
-            </ion-row>
-        </ion-grid>
+
+                </ion-row>
+            </ion-grid>
+        }
     </ion-content>
 
     @if (selectedBBookingForUpdate && selectedBBookingForUpdate.fetchedPlace) {

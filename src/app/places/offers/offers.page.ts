@@ -21,7 +21,7 @@ import {OfferItemComponent} from "./offer-item/offer-item.component";
 import {PlacesService} from "../places.service";
 import {Place} from "../model/place.model";
 import {addIcons} from "ionicons";
-import {addOutline, searchCircle} from "ionicons/icons";
+import {addOutline, informationCircleOutline, searchCircle} from "ionicons/icons";
 import {RouterLink} from "@angular/router";
 import {Subscription, switchMap, take} from "rxjs";
 import {AuthService} from "../../auth/auth.service";
@@ -44,8 +44,9 @@ export class OffersPage implements OnInit, OnDestroy {
 
     constructor(private placesService: PlacesService,
                 private authService: AuthService) {
-        addIcons({addOutline})
+        addIcons({addOutline});
         addIcons({ searchCircle });
+        addIcons({ informationCircleOutline });
     }
 
     ngOnDestroy(): void {

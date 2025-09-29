@@ -39,9 +39,11 @@
                                         id="dateTo"
                                         [(ngModel)]="dateToFilter"
                                         presentation="date"
-                                        [min]="dateFromFilter ? dateFromFilter : currentDate.toISOString()"
+                                        [min]="minDateTo || currentDate.toISOString()"
                                         (ionChange)="onDateToChange($event)">
                                 </ion-datetime>
+
+
                             </ng-template>
                         </ion-popover>
                     </ion-list>
@@ -50,32 +52,34 @@
         </ion-row>
         <ion-row>
             <ion-col class="ion-text-center">
-                <ion-button color="tertiary" (click)="applyFilter()" [disabled]="!dateFromFilter && !dateToFilter">Filter
+                <ion-button color="tertiary" (click)="applyFilter()" [disabled]="!dateFromFilter && !dateToFilter">
+                    Filter
                 </ion-button>
             </ion-col>
         </ion-row>
     </ion-grid>
 
-    @if(isEmptySearchResult) {
+    @if (isEmptySearchResult) {
         <ion-title class="ion-text-center ion-padding">No results for selected dates</ion-title>
     }
-<ion-grid>
-    <ion-row>
-        <ion-col class="ion-padding">
-            <ion-list>
-                @for (bookingWithUser of presentedBookingsWithUser; track bookingWithUser.booking.id) {
-                    <ion-item class="bookings">
-                        <ion-label class="ion-text-wrap">
-                            <ion-text color="tertiary">{{ bookingWithUser.booking.bookedFrom.toDate() | date }}
-                                - {{ bookingWithUser.booking.bookedTo.toDate() | date }}
-                            </ion-text>
-                            <p>Guests: {{ bookingWithUser.booking.guestNumber }}</p>
-                            <p>Booked by: {{ bookingWithUser.user.firstName }} {{ bookingWithUser.user.lastName }}</p>
-                        </ion-label>
-                    </ion-item>
-                }
-            </ion-list>
-        </ion-col>
-    </ion-row>
-</ion-grid>
+    <ion-grid>
+        <ion-row>
+            <ion-col class="ion-padding">
+                <ion-list>
+                    @for (bookingWithUser of presentedBookingsWithUser; track bookingWithUser.booking.id) {
+                        <ion-item class="bookings">
+                            <ion-label class="ion-text-wrap">
+                                <ion-text color="tertiary">{{ bookingWithUser.booking.bookedFrom.toDate() | date }}
+                                    - {{ bookingWithUser.booking.bookedTo.toDate() | date }}
+                                </ion-text>
+                                <p>Guests: {{ bookingWithUser.booking.guestNumber }}</p>
+                                <p>Booked
+                                    by: {{ bookingWithUser.user.firstName }} {{ bookingWithUser.user.lastName }}</p>
+                            </ion-label>
+                        </ion-item>
+                    }
+                </ion-list>
+            </ion-col>
+        </ion-row>
+    </ion-grid>
 }

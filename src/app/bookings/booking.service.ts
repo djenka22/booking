@@ -139,10 +139,15 @@ export class BookingService {
     }
 
     updateBooking(bookingDto: BookingDto): Promise<void> {
+
+        console.log('updating - start date', bookingDto.bookedFrom?.toISOString(), 'end date', bookingDto.bookedTo?.toISOString());
         const bookingRef = doc(this.firestore, 'bookings', bookingDto.id!);
 
         const normalizedBookedFrom = DateUtilsService.normalizeDateToMidnight(bookingDto.bookedFrom!);
         const normalizedBookedTo = DateUtilsService.normalizeDateToMidnight(bookingDto.bookedTo!);
+
+        console.log('normalized - start date', normalizedBookedFrom.toDateString(), 'end date', normalizedBookedTo.toDateString());
+
 
         return updateDoc(bookingRef, {
             bookedFrom: Timestamp.fromDate(normalizedBookedFrom),

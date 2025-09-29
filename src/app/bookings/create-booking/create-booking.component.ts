@@ -223,8 +223,8 @@ export class CreateBookingComponent implements OnInit {
     }
 
     private setDataForExistingBooking() {
-        this.dateFrom = this.existingBooking().bookedFrom.toDate().toISOString();
-        this.dateTo = this.existingBooking().bookedTo.toDate().toISOString();
+        this.dateFrom = DateUtilsService.toLocalDateISO(this.existingBooking().bookedFrom.toDate());
+        this.dateTo = DateUtilsService.toLocalDateISO(this.existingBooking().bookedTo.toDate());
         this.guestNumber = this.existingBooking().guestNumber.toString();
     }
 

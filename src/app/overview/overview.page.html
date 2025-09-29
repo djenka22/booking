@@ -13,7 +13,13 @@
         <ion-content class="ion-padding ion-text-center">
             <ion-spinner color="primary"></ion-spinner>
         </ion-content>
-    } @else {
+    } @else if (placesCount === 0) {
+        <!-- No Data -->
+            <div class="empty-state">
+                <ion-icon name="information-circle-outline" size="large"></ion-icon>
+                <p>No places found for your account.</p>
+            </div>
+        } @else {
         <!-- Stats Summary -->
         <ion-card>
             <ion-card-header>
@@ -119,15 +125,6 @@
                 }
             </ion-list>
         </ion-card>
-
-        <!-- No Data -->
-        @if (placesCount === 0) {
-            <div class="empty-state">
-                <ion-icon name="information-circle-outline" size="large"></ion-icon>
-                <p>No places found for your account.</p>
-            </div>
-        }
     }
-
 
 </ion-content>

@@ -10,3 +10,15 @@ ion-searchbar {
   // Set the color for the search icon and the clear button icon
   --icon-color: var(--ion-color-primary-contrast);
 }
+
+.empty-state {
+  text-align: center;
+  color: var(--ion-color-medium);
+  margin-top: 3rem;
+}
+
+.empty-state ion-icon {
+  display: block;
+  margin: 0 auto 0.5rem;
+}
+

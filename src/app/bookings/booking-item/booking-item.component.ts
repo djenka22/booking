@@ -70,7 +70,7 @@ export class BookingItemComponent implements OnInit {
     currentDate: Date = new Date();
 
     isEmptySearchResult: boolean = false;
-
+    minDateTo: string | null = null;
 
     constructor(private bookingsService: BookingService,
                 private authService: AuthService) {
@@ -117,7 +117,9 @@ export class BookingItemComponent implements OnInit {
 
     onDateFromChange(event: any) {
         this.dateFromFilter = event.detail.value;
-        if (this.dateFromFilter && this.dateToFilter && (new Date(this.dateFromFilter) > new Date(this.dateToFilter))) {
+        this.minDateTo = this.dateFromFilter;
+
+        if (!this.dateToFilter || this.dateFromFilter && this.dateToFilter && (new Date(this.dateFromFilter) > new Date(this.dateToFilter))) {
             this.dateToFilter = this.dateFromFilter;
         }
     }
@@ -128,8 +130,8 @@ export class BookingItemComponent implements OnInit {
 
     applyFilter() {
         let bookings = new Map<string, Booking>();
-        const dateFrom = this.dateFromFilter ? new Date(this.dateFromFilter) : null;
-        const dateTo = this.dateToFilter ? new Date(this.dateToFilter) : null;
+        const dateFrom = this.dateFromFilter && this.dateFromDisplay === 'block' ? new Date(this.dateFromFilter) : null;
+        const dateTo = this.dateToFilter && this.dateToDisplay === 'block' ? new Date(this.dateToFilter) : null;
 
         this.bookingsService.findBookingsByDatesInRange(dateFrom, dateTo, this.place().id)
             .pipe(
@@ -175,8 +177,10 @@ export class BookingItemComponent implements OnInit {
     cancelDateToFilter() {
         this.dateToDisplay = 'none';
         this.dateToFilter = null;
-        this.presentedBookingsWithUser = this.bookingsWithUser;
-        this.isEmptySearchResult = this.presentedBookingsWithUser.length === 0;
+        if (this.dateFromDisplay === 'none') {
+            this.presentedBookingsWithUser = this.bookingsWithUser;
+            this.isEmptySearchResult = this.presentedBookingsWithUser.length === 0;
+        }
     }
 
     onDateFromItemClick() {
@@ -186,8 +190,10 @@ export class BookingItemComponent implements OnInit {
     cancelDateFromFilter() {
         this.dateFromDisplay = 'none';
         this.dateFromFilter = null;
-        this.presentedBookingsWithUser = this.bookingsWithUser;
-        this.isEmptySearchResult = this.presentedBookingsWithUser.length === 0;
+        if (this.dateToDisplay === 'none') {
+            this.presentedBookingsWithUser = this.bookingsWithUser;
+            this.isEmptySearchResult = this.presentedBookingsWithUser.length === 0;
+        }
 
     }
 

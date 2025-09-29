@@ -26,7 +26,7 @@ import {
 import {BookingService} from "./booking.service";
 import {Booking, BookingDto, BookingFormDto} from "./booking.model";
 import {addIcons} from "ionicons";
-import {createOutline, searchCircle, trashOutline} from "ionicons/icons";
+import {createOutline, informationCircleOutline, searchCircle, trashOutline} from "ionicons/icons";
 import {Subscription} from "rxjs";
 import {CreateBookingComponent} from "./create-booking/create-booking.component";
 
@@ -57,6 +57,7 @@ export class BookingsPage implements OnInit, OnDestroy {
         addIcons({trashOutline});
         addIcons({createOutline});
         addIcons({ searchCircle });
+        addIcons({ informationCircleOutline });
     }
 
     ngOnDestroy(): void {
@@ -195,12 +196,13 @@ export class BookingsPage implements OnInit, OnDestroy {
 
     private presentBookingEditedAlert() {
         return this.alertController.create({
-            header: 'Cancelled',
+            header: this.selectedBBookingForUpdate.fetchedPlace?.title,
             message: 'Your booking has been successfully updated.',
             buttons: [{
                 text: 'Okay',
                 handler: () => {
                     this.closeModal();
+                    this.ionSearchbar.value = '';
                 }
             }],
         }).then(alert => {

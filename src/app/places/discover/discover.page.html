@@ -10,38 +10,52 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-    <ion-grid>
-        @if (fetchLoading) {
+    @if (fetchLoading) {
+        <ion-row>
+            <ion-col size="12" size-sm="8" offset-sm="2" class="ion-text-center">
+                <ion-spinner color="primary"></ion-spinner>
+            </ion-col>
+        </ion-row>
+    } @else if (presentedPlaces.length === 0) {
+        <!-- No Data -->
+        <div class="empty-state">
+            <ion-icon name="information-circle-outline" size="large"></ion-icon>
+            <p>No places are found.</p>
+        </div>
+    } @else {
+        <ion-grid>
+            @if (fetchLoading) {
+                <ion-row>
+                    <ion-col size="12" size-sm="8" offset-sm="2" class="ion-text-center">
+                        <ion-spinner color="primary"></ion-spinner>
+                    </ion-col>
+                </ion-row>
+            } @else if (hasFeaturedPlaces) {
+                <ion-row>
+                    <ion-col size="12" size-sm="8" offset-sm="2" class="ion-text-center">
+                        <cdk-virtual-scroll-viewport itemSize="390" minBufferPx="1100" maxBufferPx="2000"
+                                                     style="height: 398px">
+                            <app-featured-place
+                                    *cdkVirtualFor="let presentedPlace of presentedPlaces | featuredPlaces: true"
+                                    [_place]="presentedPlace.place"
+                                    [_routerLinkPath]="presentedPlace.routerLinkPath"
+                            ></app-featured-place>
+                        </cdk-virtual-scroll-viewport>
+                    </ion-col>
+                </ion-row>
+            }
             <ion-row>
-                <ion-col size="12" size-sm="8" offset-sm="2" class="ion-text-center">
-                    <ion-spinner color="primary"></ion-spinner>
-                </ion-col>
-            </ion-row>
-        } @else if (hasFeaturedPlaces) {
-            <ion-row>
-                <ion-col size="12" size-sm="8" offset-sm="2" class="ion-text-center">
-                    <cdk-virtual-scroll-viewport itemSize="350" minBufferPx="1100" maxBufferPx="2000"
-                                                 style="height: 375px">
-                        <app-featured-place
-                                *cdkVirtualFor="let presentedPlace of presentedPlaces | featuredPlaces: true"
-                                [_place]="presentedPlace.place"
-                                [_routerLinkPath]="presentedPlace.routerLinkPath"
-                        ></app-featured-place>
+                <ion-col size="12" size-sm="8" offset-sm="2" class="ion-text-center ion ion-padding-top">
+                    <cdk-virtual-scroll-viewport itemSize="86" minBufferPx="720" maxBufferPx="1500"
+                                                 style="height: 178px;">
+                        <app-common-place
+                                *cdkVirtualFor="let presentedPlace of presentedPlaces | featuredPlaces: false"
+                                [place]="presentedPlace.place"
+                                [routerLinkPath]="presentedPlace.routerLinkPath"
+                        ></app-common-place>
                     </cdk-virtual-scroll-viewport>
                 </ion-col>
             </ion-row>
-        }
-        <ion-row>
-            <ion-col size="12" size-sm="8" offset-sm="2" class="ion-text-center ion ion-padding-top">
-                <cdk-virtual-scroll-viewport itemSize="86" minBufferPx="720" maxBufferPx="1500"
-                                             style="height: 178px;">
-                    <app-common-place
-                            *cdkVirtualFor="let presentedPlace of presentedPlaces | featuredPlaces: false"
-                            [place]="presentedPlace.place"
-                            [routerLinkPath]="presentedPlace.routerLinkPath"
-                    ></app-common-place>
-                </cdk-virtual-scroll-viewport>
-            </ion-col>
-        </ion-row>
-    </ion-grid>
+        </ion-grid>
+    }
 </ion-content>
