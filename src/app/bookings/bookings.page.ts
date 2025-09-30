@@ -72,8 +72,9 @@ export class BookingsPage implements OnInit, OnDestroy {
     ngOnInit() {
         console.log('BookingsPage ngOnInit');
         this.bookingsSubscription = this.bookingsService.bookings.subscribe(bookings => {
-            this.loadedBookings = bookings;
-            this.presentedBookings = this.loadedBookings;
+            this.loadedBookings = [...bookings];
+            this.presentedBookings = bookings;
+            console.log('Bookings loaded:', this.presentedBookings);
         });
     }
 
@@ -83,6 +84,7 @@ export class BookingsPage implements OnInit, OnDestroy {
 
     ionViewWillEnter() {
         this.ionSearchbar.value = '';
+        console.log('Bookings loaded:', this.presentedBookings);
 
         this.fetchLoading = true;
         this.bookingsSubscriptionFetch = this.bookingsService.fetchBookings().subscribe(
@@ -177,6 +179,7 @@ export class BookingsPage implements OnInit, OnDestroy {
     }
 
     onClearSearch() {
+        console.log('Clearing search', this.loadedBookings);
         this.presentedBookings = this.loadedBookings;
     }
 

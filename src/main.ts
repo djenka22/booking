@@ -9,21 +9,25 @@ import {firebaseConfig} from "./environments/environment.prod";
 import {getFirestore, provideFirestore} from "@angular/fire/firestore";
 import {getStorage, provideStorage} from "@angular/fire/storage";
 import {provideHttpClient} from "@angular/common/http";
-import {getAuth, initializeAuth, provideAuth} from "@angular/fire/auth";
 import {Capacitor} from "@capacitor/core";
+import {getAuth, indexedDBLocalPersistence, initializeAuth, provideAuth} from "@angular/fire/auth";
+
+const app = initializeApp(firebaseConfig);
 
 bootstrapApplication(AppComponent, {
     providers: [
         {provide: RouteReuseStrategy, useClass: IonicRouteStrategy},
         provideIonicAngular(),
         provideRouter(routes, withPreloading(PreloadAllModules)),
-        provideFirebaseApp(() => initializeApp(firebaseConfig)),
+        provideFirebaseApp(() => app),
         provideFirestore(() => getFirestore()),
         provideStorage(() => getStorage()),
         provideHttpClient(),
         provideAuth(() => {
                 if (Capacitor.isNativePlatform()) {
-                    return initializeAuth(getApp())
+                    return initializeAuth(getApp(), {
+                        persistence: indexedDBLocalPersistence
+                    })
                 } else {
                     return getAuth();
                 }

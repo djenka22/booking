@@ -16,6 +16,7 @@ import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/
 import {Place} from "../../model/place.model";
 import {ImagePickerComponent} from "../../../shared/pickers/image-picker/image-picker.component";
 import {FileUtilsService} from "../../../shared/file-utils.service";
+import {DateUtilsService} from "../../../shared/utils/date-utils.service";
 
 @Component({
     selector: 'app-offer-form',
@@ -49,8 +50,12 @@ export class OfferFormComponent implements OnInit {
     }
 
     ngOnInit() {
-        const dateFrom = this.offer()?.availableFrom.toDate().toISOString() || this.currentDate;
-        const dateTo = this.offer()?.availableTo.toDate().toISOString() || this.currentDate;
+        let dateFrom = this.currentDate;
+        let dateTo = this.currentDate;
+        if (this.offer()) {
+            dateFrom = DateUtilsService.toLocalDateISO(this.offer()!.availableFrom.toDate());
+            dateTo = DateUtilsService.toLocalDateISO(this.offer()!.availableTo.toDate());
+        }
 
         this.offerForm = this.formBuilder.group({
             title: [this.offer()?.title, {

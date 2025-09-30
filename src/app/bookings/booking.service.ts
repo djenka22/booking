@@ -231,7 +231,7 @@ export class BookingService {
 
     findActiveBookingByPlaceId(placeId: string): Observable<Booking | null> {
         const placeRef = doc(this.firestore, 'places', placeId) as DocumentReference<Place>;
-        const currentDate = new Date();
+        const currentDate = DateUtilsService.normalizeDateToMidnight(new Date());
 
         // --- Query 1: bookedFrom >= date ---
         const q1 = query(
@@ -241,6 +241,7 @@ export class BookingService {
             where('bookedTo', '>=', currentDate),
             limit(1)
         );
+        console.log('date', DateUtilsService.toLocalDateISO(currentDate));
         return (collectionData(q1, {idField: 'id'}) as Observable<Booking[]>).pipe(take(1), map(bookings => bookings.length > 0 ? bookings[0] : null));
     }
 
